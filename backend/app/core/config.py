@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     ai_max_source_per_node: int = 6_000
     ai_max_nodes: int = 150
     ai_max_edges: int = 250
-    ai_prompt_version: str = "business-analysis-v2.1"
+    ai_prompt_version: str = "business-analysis-v2.2"
     ai_graph_version: str = "static-graph-v1"
     ignored_directories: list[str] = [
         ".git",

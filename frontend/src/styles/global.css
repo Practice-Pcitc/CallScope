@@ -37,10 +37,10 @@ a {
 .app-header {
   z-index: 10;
   display: flex;
-  flex: 0 0 68px;
+  flex: 0 0 50px;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
+  padding: 0 18px;
   border-bottom: 1px solid #232731;
   background: rgba(12, 14, 19, 0.88);
   backdrop-filter: blur(18px);
@@ -55,21 +55,25 @@ a {
 
 .brand-mark {
   display: grid;
-  width: 38px;
-  height: 38px;
+  width: 32px;
+  height: 32px;
   place-items: center;
   border: 1px solid rgba(149, 132, 255, 0.45);
-  border-radius: 12px;
+  border-radius: 9px;
   color: #a99af8;
   background: linear-gradient(145deg, rgba(124, 109, 242, 0.24), rgba(54, 45, 117, 0.12));
   box-shadow: inset 0 1px rgba(255, 255, 255, 0.08);
-  font-size: 19px;
+  font-size: 16px;
 }
 
 .brand h4,
 .brand .ant-typography {
   margin: 0;
   line-height: 1.05;
+}
+
+.brand h4 {
+  font-size: 18px;
 }
 
 .brand .ant-typography-secondary {
@@ -83,7 +87,7 @@ a {
 }
 
 .project-page {
-  height: calc(100vh - 68px);
+  height: calc(100vh - 50px);
   overflow: auto;
   padding: 46px clamp(32px, 7vw, 120px) 80px;
 }
@@ -252,25 +256,74 @@ a {
 
 .graph-page {
   display: flex;
-  height: calc(100vh - 68px);
+  height: calc(100vh - 50px);
   flex-direction: column;
 }
 
 .workspace-bar {
   display: flex;
-  flex: 0 0 52px;
+  flex: 0 0 42px;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
+  padding: 0 12px;
   border-bottom: 1px solid #232731;
   background: #101218;
+}
+
+.workspace-project a {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border-radius: 7px;
+  color: #8f96a7;
+}
+
+.workspace-project a:hover {
+  color: #c5bcff;
+  background: #1a1d26;
+}
+
+.workspace-stats {
+  font-size: 11px;
 }
 
 .three-column-layout {
   display: grid;
   flex: 1;
   min-height: 0;
-  grid-template-columns: 330px minmax(500px, 1fr) 480px;
+  grid-template-columns: 310px 6px minmax(420px, 1fr) 6px 460px;
+}
+
+.panel-resizer {
+  position: relative;
+  z-index: 8;
+  min-width: 6px;
+  background: #151821;
+  cursor: col-resize;
+  touch-action: none;
+}
+
+.panel-resizer::after {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 2px;
+  width: 2px;
+  background: transparent;
+  content: "";
+  transition: background 140ms ease;
+}
+
+.panel-resizer:hover::after,
+.panel-resizing .panel-resizer::after {
+  background: #7f70e8;
+}
+
+.panel-resizing,
+.panel-resizing * {
+  cursor: col-resize !important;
+  user-select: none !important;
 }
 
 .scan-status-banner {
@@ -279,8 +332,8 @@ a {
   grid-template-columns: minmax(240px, 1fr) auto minmax(160px, 0.55fr);
   align-items: center;
   gap: 18px;
-  min-height: 58px;
-  padding: 8px 16px;
+  min-height: 46px;
+  padding: 5px 12px;
   border-bottom: 1px solid #272c36;
   background: #13161d;
 }
@@ -336,11 +389,11 @@ a {
 }
 
 .left-panel {
-  border-right: 1px solid #232731;
+  border-right: 0;
 }
 
 .right-panel {
-  border-left: 1px solid #232731;
+  border-left: 0;
 }
 
 .panel-content {
@@ -348,8 +401,8 @@ a {
   height: 100%;
   min-height: 0;
   flex-direction: column;
-  gap: 14px;
-  padding: 18px 16px;
+  gap: 10px;
+  padding: 12px;
 }
 
 .panel-heading {
@@ -681,10 +734,10 @@ a {
 .graph-toolbar {
   z-index: 2;
   display: flex;
-  flex: 0 0 62px;
+  flex: 0 0 48px;
   align-items: center;
   justify-content: space-between;
-  padding: 0 18px;
+  padding: 0 12px;
   border-bottom: 1px solid #20242d;
   background: rgba(15, 17, 23, 0.92);
 }
@@ -1058,7 +1111,7 @@ a {
 .right-inspector-tabs > .ant-tabs-nav {
   flex: 0 0 auto;
   margin: 0;
-  padding: 0 16px;
+  padding: 0 12px;
   border-bottom: 1px solid #242832;
 }
 
@@ -1277,11 +1330,22 @@ a {
   word-break: break-word;
 }
 
-@media (max-width: 1300px) {
-  .three-column-layout {
-    grid-template-columns: 280px minmax(430px, 1fr) 440px;
-  }
+.technical-reference-collapse {
+  margin-top: 4px;
+  border-top: 1px solid #252a35;
+}
 
+.technical-reference-collapse .ant-collapse-header {
+  padding-inline: 2px !important;
+  color: #777f90 !important;
+  font-size: 11px;
+}
+
+.technical-reference-collapse .ant-collapse-content-box {
+  padding: 4px 0 0 !important;
+}
+
+@media (max-width: 1300px) {
   .scan-status-banner {
     grid-template-columns: minmax(230px, 1fr) auto;
   }

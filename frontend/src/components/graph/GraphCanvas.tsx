@@ -127,10 +127,7 @@ export function GraphCanvas() {
   return (
     <div className="graph-canvas">
       <div className="graph-toolbar">
-        <div>
-          <Text className="eyebrow">CALL GRAPH</Text>
-          <Title level={5}>接口调用拓扑</Title>
-        </div>
+        <Title level={5}>接口调用拓扑</Title>
         <Space size={4}>
           <Tooltip title="显示 Medium / Low 关系">
             <Space size={5}>

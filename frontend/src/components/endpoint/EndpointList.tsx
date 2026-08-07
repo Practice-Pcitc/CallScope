@@ -17,6 +17,7 @@ import { useParams } from "react-router-dom";
 import { useEndpointStore } from "../../stores/endpointStore";
 import { useProjectStore } from "../../stores/projectStore";
 import type { HttpMethod } from "../../types/endpoint";
+import { cleanDisplayText } from "../../utils/displayText";
 
 const { Text, Title } = Typography;
 
@@ -64,7 +65,10 @@ export function EndpointList() {
       Object.entries(
         endpoints.reduce<Record<string, typeof endpoints>>(
           (groups, endpoint) => {
-            const category = endpoint.moduleName || "未分类";
+            const category = cleanDisplayText(
+              endpoint.moduleName,
+              "未分类"
+            );
             groups[category] = [...(groups[category] ?? []), endpoint];
             return groups;
           },
@@ -94,10 +98,7 @@ export function EndpointList() {
   return (
     <div className="panel-content endpoint-panel">
       <div className="panel-heading">
-        <div>
-          <Text className="eyebrow">ENDPOINTS</Text>
-          <Title level={5}>接口列表</Title>
-        </div>
+        <Title level={5}>接口列表</Title>
         <span className="count-badge">{total}</span>
       </div>
 
@@ -120,7 +121,10 @@ export function EndpointList() {
           value={filters.module}
           options={[
             { value: "", label: "全部业务分类" },
-            ...modules.map((module) => ({ value: module, label: module }))
+            ...modules.map((module) => ({
+              value: module,
+              label: cleanDisplayText(module, "未分类")
+            }))
           ]}
           onChange={setModule}
           style={{ width: "58%" }}
@@ -196,7 +200,10 @@ export function EndpointList() {
                           </Tooltip>
                         </div>
                         <Text className="endpoint-function" ellipsis>
-                          {endpoint.summary ?? endpoint.functionName}
+                          {cleanDisplayText(
+                            endpoint.summary,
+                            endpoint.functionName
+                          )}
                         </Text>
                         <Tooltip title={`${endpoint.filePath}:${endpoint.startLine}`}>
                           <Text type="secondary" ellipsis className="endpoint-file">

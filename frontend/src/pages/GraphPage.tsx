@@ -1,4 +1,5 @@
-import { App, Breadcrumb, Button, Space, Spin, Tag, Typography } from "antd";
+import { ArrowLeftOutlined } from "@ant-design/icons";
+import { App, Button, Space, Spin, Typography } from "antd";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
@@ -75,24 +76,23 @@ export function GraphPage() {
       <Spin spinning={loading && !activeProject} fullscreen />
       <div className="graph-page">
         <div className="workspace-bar">
-          <Breadcrumb
-            items={[
-              { title: <Link to="/projects">项目</Link> },
-              { title: activeProject?.name ?? projectId }
-            ]}
-          />
-          <Space>
-            <Text type="secondary">
+          <Space size={8} className="workspace-project">
+            <Link to="/projects" aria-label="返回项目列表">
+              <ArrowLeftOutlined />
+            </Link>
+            <Text strong>{activeProject?.name ?? projectId}</Text>
+          </Space>
+          <Space size={10}>
+            <Text type="secondary" className="workspace-stats">
               {scanRunning
                 ? "扫描中"
-                : activeProject?.scanStatus === "READY"
-                  ? "扫描完成"
-                  : "尚未扫描"}
+                : `${activeProject?.totalFiles ?? 0} 文件 · ${
+                    activeProject?.totalEndpoints ?? 0
+                  } 接口`}
             </Text>
-            <Tag>{activeProject?.totalFiles ?? 0} 个文件</Tag>
-            <Tag>{activeProject?.totalEndpoints ?? 0} 个接口</Tag>
             <Button
               type="primary"
+              size="small"
               loading={startingScan}
               disabled={scanRunning}
               onClick={() => void handleScan()}
@@ -102,7 +102,9 @@ export function GraphPage() {
           </Space>
         </div>
 
-        {activeScan && <ScanStatusBanner task={activeScan} />}
+        {activeScan && activeScan.status !== "SUCCEEDED" && (
+          <ScanStatusBanner task={activeScan} />
+        )}
 
         <ThreeColumnLayout
           left={<EndpointList />}

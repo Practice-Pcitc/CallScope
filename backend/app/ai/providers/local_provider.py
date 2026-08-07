@@ -480,13 +480,8 @@ class GroundedLocalProvider:
                 "step": len(flow) + 1,
                 "title": "返回业务结果",
                 "description": (
-                    "系统将处理结果返回给调用方；"
-                    + "静态声明的返回类型为 "
-                    + ", ".join(
-                        str(item.get("response_type") or "未声明")
-                        for item in endpoints
-                    )
-                    + "。"
+                    "系统向调用方返回本次查询或处理结果，"
+                    "调用方可以据此展示结果或继续后续业务。"
                 ),
                 "business_meaning": "调用方据此展示结果或继续后续业务。",
                 "node_ids": entry_node_ids[:10],
@@ -496,11 +491,7 @@ class GroundedLocalProvider:
         state_changes = []
         for item in changes:
             operation = item["operation"]
-            resource = (
-                item["resource"]
-                if item["resource"] != "UNKNOWN_TABLE"
-                else "相关业务数据"
-            )
+            resource = self._resource_business_name(item["resource"])
             before_after = {
                 "WRITE": ("系统中尚无本次新增记录", "新增一份业务记录"),
                 "UPDATE": ("保留原有业务状态或内容", "业务状态或内容被更新"),
@@ -528,39 +519,43 @@ class GroundedLocalProvider:
                 }
             )
 
-        inputs = list(
+        raw_inputs = list(
             dict.fromkeys(
                 str(parameter.get("name") or "未命名输入")
                 for endpoint in endpoints
                 for parameter in endpoint.get("parameters", [])
             )
         )
-        response_types = list(
+        inputs = list(
             dict.fromkeys(
-                str(endpoint.get("response_type") or "业务处理结果")
-                for endpoint in endpoints
+                self._business_input_name(item) for item in raw_inputs
+            )
+        )
+        outputs = list(
+            dict.fromkeys(
+                self._business_output(endpoint) for endpoint in endpoints
             )
         )
         data_flow = {
-            "inputs": inputs or ["当前接口未声明可识别的输入参数"],
-            "reads": [
-                (
-                    item["resource"]
-                    if item["resource"] != "UNKNOWN_TABLE"
-                    else "用于业务判断的相关数据"
+            "inputs": inputs or ["调用方没有提供额外业务信息"],
+            "reads": list(
+                dict.fromkeys(
+                    self._resource_business_name(item["resource"])
+                    for item in reads
                 )
-                for item in reads
-            ],
-            "changes": [
-                f"{item['operation']}："
-                + (
-                    item["resource"]
-                    if item["resource"] != "UNKNOWN_TABLE"
-                    else "相关业务数据"
+            ),
+            "changes": list(
+                dict.fromkeys(
+                    {
+                        "WRITE": "新增",
+                        "UPDATE": "修改",
+                        "DELETE": "删除",
+                    }.get(item["operation"], "处理")
+                    + self._resource_business_name(item["resource"])
+                    for item in changes
                 )
-                for item in changes
-            ],
-            "outputs": response_types,
+            ),
+            "outputs": outputs or ["本次业务处理结果"],
         }
 
         object_names: list[str] = []
@@ -572,7 +567,7 @@ class GroundedLocalProvider:
                     self._business_object_name(module.split(".")[-1])
                 )
         object_names.extend(
-            item["resource"]
+            self._resource_business_name(item["resource"])
             for item in data_ops
             if item["resource"] != "UNKNOWN_TABLE"
         )
@@ -740,9 +735,20 @@ class GroundedLocalProvider:
             "selectlist",
             "querywrapper",
             "主要协作",
+            "<",
+            ">",
+            "::",
         )
         lowered = value.lower()
-        return not any(marker in lowered for marker in technical_markers)
+        has_method_call = bool(re.search(r"\b[A-Za-z_$][\w$]*\s*\(", value))
+        has_qualified_name = bool(
+            re.search(r"\b[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*){2,}", value)
+        )
+        return (
+            not any(marker in lowered for marker in technical_markers)
+            and not has_method_call
+            and not has_qualified_name
+        )
 
     @classmethod
     def _business_capability(cls, endpoint: dict) -> str:
@@ -843,6 +849,58 @@ class GroundedLocalProvider:
             if word not in {"common", "controller", "service", "api"}
         )
         return translated or "当前业务对象（具体名称无法确认）"
+
+    @classmethod
+    def _resource_business_name(cls, value: str) -> str:
+        if not value or value == "UNKNOWN_TABLE":
+            return "与本次操作相关的业务数据"
+        translated = cls._business_object_name(value)
+        return (
+            "与本次操作相关的业务数据"
+            if "具体名称无法确认" in translated
+            else translated
+        )
+
+    @classmethod
+    def _business_input_name(cls, value: str) -> str:
+        words = cls._name_words(value)
+        word_set = set(words)
+        if "ids" in word_set or (
+            "id" in word_set and any(word in word_set for word in ("list", "array"))
+        ):
+            return "待处理业务对象的标识列表"
+        if "id" in word_set:
+            return "目标业务对象标识"
+        if any(word in word_set for word in ("page", "size", "limit", "offset")):
+            return "分页查询条件"
+        if "status" in word_set or "state" in word_set:
+            return "目标业务状态"
+        if "code" in word_set:
+            return "业务编码"
+        if any(word in word_set for word in ("keyword", "search", "query")):
+            return "查询条件"
+        if any(word in word_set for word in ("request", "payload", "data", "body")):
+            return "调用方提交的业务信息"
+        return "调用方提交的业务信息"
+
+    @classmethod
+    def _business_output(cls, endpoint: dict) -> str:
+        words = set(
+            cls._name_words(
+                str(endpoint.get("function_name") or endpoint.get("path") or "")
+            )
+        )
+        if words & {"get", "query", "find", "list", "search"}:
+            return "符合条件的业务数据"
+        if words & {"create", "add", "save"}:
+            return "业务数据创建结果"
+        if words & {"update", "edit", "modify"}:
+            return "业务数据修改结果"
+        if words & {"delete", "remove"}:
+            return "业务数据删除结果"
+        if words & {"check", "validate"}:
+            return "业务检查结果"
+        return "本次业务处理结果"
 
     @staticmethod
     def _name_words(value: str) -> list[str]:

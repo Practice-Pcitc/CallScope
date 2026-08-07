@@ -7,6 +7,7 @@ import {
 import {
   Alert,
   Button,
+  Collapse,
   Descriptions,
   Empty,
   Segmented,
@@ -68,6 +69,7 @@ function DataColumn({
 export function AIAnalysisPanel() {
   const { projectId } = useParams();
   const selectedIds = useEndpointStore((state) => state.selectedIds);
+  const endpoints = useEndpointStore((state) => state.endpoints);
   const selectedNodeId = useGraphStore((state) => state.selectedNodeId);
   const setAIHighlights = useGraphStore((state) => state.setAIHighlights);
   const clearAIHighlights = useGraphStore((state) => state.clearAIHighlights);
@@ -153,13 +155,20 @@ export function AIAnalysisPanel() {
           binding: binding(item.nodeIds)
         }))
       ],
-      related: result.relatedEndpoints.map((item, index) => ({
-        key: `related-${index}`,
-        title: item.endpointId,
-        description: item.relationship,
-        meta: item.businessReason,
-        binding: binding([])
-      })),
+      related: result.relatedEndpoints.map((item, index) => {
+        const endpoint = endpoints.find(
+          (candidate) => candidate.id === item.endpointId
+        );
+        return {
+          key: `related-${index}`,
+          title: endpoint
+            ? `${endpoint.httpMethod} ${endpoint.path}`
+            : "关联业务接口",
+          description: item.relationship,
+          meta: item.businessReason,
+          binding: binding([])
+        };
+      }),
       risks: result.businessRisks.map((item, index) => ({
         key: `risk-${index}`,
         title: (
@@ -171,7 +180,7 @@ export function AIAnalysisPanel() {
         binding: binding(item.nodeIds)
       }))
     };
-  }, [result]);
+  }, [endpoints, result]);
 
   const locatedBindings = useMemo<LocatedBinding[]>(
     () =>
@@ -337,32 +346,44 @@ export function AIAnalysisPanel() {
         },
         {
           key: "risks",
-          label: "风险与技术",
+          label: "业务风险",
           children: (
             <div className="ai-tab-stack">
               {cardList("risks", "当前证据不足以确认潜在业务风险")}
-              <div className="ai-section-label">技术实现参考</div>
-              <div className="business-logic-card">
-                <Paragraph>
-                  <Text strong>入口：</Text>
-                  {result.technicalReference.entry}
-                </Paragraph>
-                <DataColumn
-                  title="核心方法"
-                  items={result.technicalReference.coreMethods}
-                  empty="无"
-                />
-                <DataColumn
-                  title="数据访问"
-                  items={result.technicalReference.dataAccess}
-                  empty="无"
-                />
-                <DataColumn
-                  title="关键源码"
-                  items={result.technicalReference.sourceFiles}
-                  empty="无"
-                />
-              </div>
+              <Collapse
+                ghost
+                size="small"
+                className="technical-reference-collapse"
+                items={[
+                  {
+                    key: "technical-reference",
+                    label: "查看代码证据（开发排查用）",
+                    children: (
+                      <div className="business-logic-card">
+                        <Paragraph>
+                          <Text strong>接口入口：</Text>
+                          {result.technicalReference.entry}
+                        </Paragraph>
+                        <DataColumn
+                          title="核心方法"
+                          items={result.technicalReference.coreMethods}
+                          empty="无"
+                        />
+                        <DataColumn
+                          title="数据访问"
+                          items={result.technicalReference.dataAccess}
+                          empty="无"
+                        />
+                        <DataColumn
+                          title="关键源码"
+                          items={result.technicalReference.sourceFiles}
+                          empty="无"
+                        />
+                      </div>
+                    )
+                  }
+                ]}
+              />
             </div>
           )
         }
@@ -372,10 +393,7 @@ export function AIAnalysisPanel() {
   return (
     <div className="panel-content ai-analysis-panel">
       <div className="panel-heading">
-        <div>
-          <Text className="eyebrow">BUSINESS ANALYSIS</Text>
-          <Title level={5}>AI 业务链路分析</Title>
-        </div>
+        <Title level={5}>AI 业务链路分析</Title>
         <RobotOutlined className="ai-panel-icon" />
       </div>
       <Segmented
@@ -443,19 +461,18 @@ export function AIAnalysisPanel() {
           </div>
         ) : (
           <>
-            <div className="ai-analysis-meta">
-              <Space size={5} wrap>
-                <Tag color="purple">{analysis.provider}</Tag>
-                <Tag>{analysis.model}</Tag>
-                {analysis.cached && <Tag color="green">缓存命中</Tag>}
-                {analysis.stale && <Tag color="gold">扫描后已过期</Tag>}
-                {analysis.invalidReferenceCount > 0 && (
-                  <Tag color="orange">
-                    已过滤 {analysis.invalidReferenceCount} 个无效引用
-                  </Tag>
-                )}
-              </Space>
-            </div>
+            {(analysis.stale || analysis.invalidReferenceCount > 0) && (
+              <div className="ai-analysis-meta">
+                <Space size={5} wrap>
+                  {analysis.stale && <Tag color="gold">扫描后已过期</Tag>}
+                  {analysis.invalidReferenceCount > 0 && (
+                    <Tag color="orange">
+                      已过滤 {analysis.invalidReferenceCount} 个无效引用
+                    </Tag>
+                  )}
+                </Space>
+              </div>
+            )}
             <Tabs
               className="ai-analysis-tabs"
               size="small"

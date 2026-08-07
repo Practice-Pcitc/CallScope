@@ -87,7 +87,12 @@ export function ProjectPage() {
     try {
       const project = await createProject(payload);
       setImportOpen(false);
-      message.success("项目已导入");
+      try {
+        await startScan(project.id);
+        message.success("项目已导入，正在自动扫描");
+      } catch {
+        message.warning("项目已导入，但自动扫描未启动，可在工作台重试");
+      }
       navigate(`/projects/${project.id}/graph`);
     } catch {
       message.error(useProjectStore.getState().error ?? "项目导入失败");

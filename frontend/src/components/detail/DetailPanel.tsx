@@ -18,6 +18,7 @@ import {
 import { useEndpointStore } from "../../stores/endpointStore";
 import { useGraphStore } from "../../stores/graphStore";
 import type { Endpoint } from "../../types/endpoint";
+import { cleanDisplayText } from "../../utils/displayText";
 
 const { Paragraph, Text, Title } = Typography;
 
@@ -46,8 +47,13 @@ function BusinessLogic({
   metadata: Record<string, unknown>;
   fallback: string;
 }) {
-  const logic = metadataText(metadata, "businessLogic") ?? fallback;
-  const steps = metadataList(metadata, "businessSteps");
+  const logic = cleanDisplayText(
+    metadataText(metadata, "businessLogic"),
+    fallback
+  );
+  const steps = metadataList(metadata, "businessSteps")
+    .map((step) => cleanDisplayText(step))
+    .filter(Boolean);
 
   return (
     <>
@@ -92,7 +98,9 @@ function EndpointDetail({ endpoint }: { endpoint: Endpoint }) {
       </Paragraph>
       <Descriptions column={1} size="small" colon={false}>
         <Descriptions.Item label="业务分类">
-          <Tag color="geekblue">{endpoint.moduleName}</Tag>
+          <Tag color="geekblue">
+            {cleanDisplayText(endpoint.moduleName, "未分类")}
+          </Tag>
         </Descriptions.Item>
         {controllerClass && (
           <Descriptions.Item label="Controller">
@@ -195,10 +203,7 @@ export function DetailPanel() {
   return (
     <div className="panel-content detail-panel">
       <div className="panel-heading">
-        <div>
-          <Text className="eyebrow">INSPECTOR</Text>
-          <Title level={5}>节点与代码证据</Title>
-        </div>
+        <Title level={5}>节点与代码证据</Title>
         {selectedNodeDetail && <Tag>{selectedNodeDetail.type}</Tag>}
       </div>
 

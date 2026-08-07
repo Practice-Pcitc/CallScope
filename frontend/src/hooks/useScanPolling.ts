@@ -1,16 +1,18 @@
 import { useEffect } from "react";
 
+import { useEndpointStore } from "../stores/endpointStore";
 import { useProjectStore } from "../stores/projectStore";
 
 const ACTIVE_STATUSES = new Set(["PENDING", "RUNNING"]);
 
 export function useScanPolling(projectId: string | undefined) {
-  const activeScan = useProjectStore((state) => state.activeScan);
+  const activeScanId = useProjectStore((state) => state.activeScan?.id);
   const refreshScan = useProjectStore((state) => state.refreshScan);
   const fetchProject = useProjectStore((state) => state.fetchProject);
+  const fetchEndpoints = useEndpointStore((state) => state.fetchEndpoints);
 
   useEffect(() => {
-    if (!projectId || !activeScan || !ACTIVE_STATUSES.has(activeScan.status)) {
+    if (!projectId) {
       return;
     }
 
@@ -27,6 +29,9 @@ export function useScanPolling(projectId: string | undefined) {
           timer = window.setTimeout(poll, 1000);
         } else {
           await fetchProject(projectId);
+          if (task.status === "SUCCEEDED") {
+            await fetchEndpoints(projectId);
+          }
         }
       } catch {
         if (!cancelled) {
@@ -42,6 +47,11 @@ export function useScanPolling(projectId: string | undefined) {
         window.clearTimeout(timer);
       }
     };
-  }, [activeScan, fetchProject, projectId, refreshScan]);
+  }, [
+    activeScanId,
+    fetchEndpoints,
+    fetchProject,
+    projectId,
+    refreshScan
+  ]);
 }
-

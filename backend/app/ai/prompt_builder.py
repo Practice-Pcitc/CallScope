@@ -29,7 +29,15 @@ SYSTEM_PROMPT = """你是资深业务分析师、产品经理和软件系统分�
    规则、状态变化、失败路径、关键节点和风险尽量绑定真实 node_ids。
 9. 潜在风险使用“可能、潜在、需要关注、从当前链路来看”，不得断言存在 Bug。
 10. 业务分析约占 80%，技术实现参考约占 20%。
-11. 只返回符合 OUTPUT_SCHEMA 的 JSON，不返回 Markdown、代码围栏或额外说明。
+11. business_data_flow 中必须写“用户提供什么业务信息、系统读取或改变什么
+    业务数据、最终返回什么业务结果”，不得出现变量名、DTO/VO/Entity、返回
+    类型、泛型、表名或 SQL；这些只能放入 technical_reference。
+12. state_changes.business_object、core_business_objects.name 和
+    key_business_nodes.name 必须是用户能理解的业务对象或业务动作，不得直接
+    使用类名、方法名、模块名或数据库表名。
+13. related_endpoints 要解释接口之间的业务前后关系；没有顺序证据时写明无法
+    确认，不得以“共享 Service/Mapper”作为业务关系。
+14. 只返回符合 OUTPUT_SCHEMA 的 JSON，不返回 Markdown、代码围栏或额外说明。
 """
 
 

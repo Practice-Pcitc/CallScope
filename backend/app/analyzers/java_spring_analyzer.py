@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import html
 import re
 from collections import defaultdict
 from collections.abc import Callable, Iterable
@@ -1108,7 +1109,9 @@ def _java_doc_summary(text: str) -> str | None:
 
 
 def _controller_category(java_class: JavaClass) -> str:
-    summary = (java_class.summary or "").strip()
+    summary = html.unescape(java_class.summary or "")
+    summary = re.sub(r"<[^>]*>", " ", summary)
+    summary = re.sub(r"\s+", " ", summary).strip()
     if summary:
         summary = re.sub(
             r"(?:Controller|控制器)\s*$",
