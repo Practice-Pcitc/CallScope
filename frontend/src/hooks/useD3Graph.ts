@@ -16,6 +16,8 @@ interface UseD3GraphOptions {
   roots: string[];
   selectedNodeId: string | null;
   selectedEdgeId: string | null;
+  highlightedNodeIds: string[];
+  highlightedEdgeIds: string[];
   layoutVersion: number;
   onNodeClick: (nodeId: string) => void;
   onNodeToggle: (node: GraphNode) => void;
@@ -63,6 +65,8 @@ export function useD3Graph({
   roots,
   selectedNodeId,
   selectedEdgeId,
+  highlightedNodeIds,
+  highlightedEdgeIds,
   layoutVersion,
   onNodeClick,
   onNodeToggle,
@@ -126,6 +130,8 @@ export function useD3Graph({
     const viewport = d3.select(viewportElement);
     const positions = layoutGraph(nodes, visibleEdges, roots);
     positionsRef.current = positions;
+    const aiNodeIds = new Set(highlightedNodeIds);
+    const aiEdgeIds = new Set(highlightedEdgeIds);
     const relatedIds = new Set<string>();
     if (selectedNodeId) {
       relatedIds.add(selectedNodeId);
@@ -203,6 +209,7 @@ export function useD3Graph({
     edgeEnter
       .merge(edgeSelection)
       .classed("selected", (edge) => edge.id === selectedEdgeId)
+      .classed("ai-highlighted", (edge) => aiEdgeIds.has(edge.id))
       .classed("low-confidence", (edge) =>
         ["MEDIUM", "LOW"].includes(edge.confidence)
       )
@@ -315,6 +322,7 @@ export function useD3Graph({
     const mergedNodes = nodeEnter.merge(nodeSelection);
     mergedNodes
       .classed("selected", (node) => node.id === selectedNodeId)
+      .classed("ai-highlighted", (node) => aiNodeIds.has(node.id))
       .classed("shared", (node) => node.shared)
       .classed("dimmed", (node) => Boolean(selectedNodeId && !relatedIds.has(node.id)))
       .attr("aria-label", (node) => `${node.type} ${node.name}`)
@@ -374,6 +382,8 @@ export function useD3Graph({
     });
   }, [
     edges,
+    highlightedEdgeIds,
+    highlightedNodeIds,
     layoutVersion,
     nodes,
     onEdgeClick,

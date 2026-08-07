@@ -2,12 +2,13 @@ import { App, Breadcrumb, Button, Space, Spin, Tag, Typography } from "antd";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
-import { DetailPanel } from "../components/detail/DetailPanel";
+import { RightInspector } from "../components/detail/RightInspector";
 import { EndpointList } from "../components/endpoint/EndpointList";
 import { GraphCanvas } from "../components/graph/GraphCanvas";
 import { ThreeColumnLayout } from "../components/layout/ThreeColumnLayout";
 import { ScanStatusBanner } from "../components/project/ScanStatusBanner";
 import { useScanPolling } from "../hooks/useScanPolling";
+import { useAIAnalysisStore } from "../stores/aiAnalysisStore";
 import { useEndpointStore } from "../stores/endpointStore";
 import { useGraphStore } from "../stores/graphStore";
 import { useProjectStore } from "../stores/projectStore";
@@ -27,6 +28,7 @@ export function GraphPage() {
   } = useProjectStore();
   const resetEndpoints = useEndpointStore((state) => state.reset);
   const resetGraph = useGraphStore((state) => state.reset);
+  const resetAI = useAIAnalysisStore((state) => state.reset);
   const [startingScan, setStartingScan] = useState(false);
 
   useEffect(() => {
@@ -35,6 +37,7 @@ export function GraphPage() {
     }
     resetEndpoints();
     resetGraph();
+    resetAI();
     void fetchProject(projectId).catch(() => message.error("项目加载失败"));
     void refreshScan(projectId).catch(() => undefined);
   }, [
@@ -42,6 +45,7 @@ export function GraphPage() {
     message,
     projectId,
     refreshScan,
+    resetAI,
     resetEndpoints,
     resetGraph
   ]);
@@ -103,7 +107,7 @@ export function GraphPage() {
         <ThreeColumnLayout
           left={<EndpointList />}
           center={<GraphCanvas />}
-          right={<DetailPanel />}
+          right={<RightInspector />}
         />
       </div>
     </>

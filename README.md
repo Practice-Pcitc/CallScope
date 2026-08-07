@@ -4,7 +4,7 @@ CallScope 是一个面向 FastAPI 与 Spring Boot 项目的接口调用拓扑静
 接口入口出发，按需展示路由函数、Service、Repository、数据库、Redis 和外部
 HTTP 调用，并为每条关系保留源码位置、调用证据与分析置信度。
 
-当前基础拓扑 MVP 已完成。本版本不包含 MCP、AI Agent、RAG 和云端部署。
+当前基础拓扑与 AI 链路分析已完成。本版本不包含 MCP、RAG 和云端部署。
 
 ## 已实现能力
 
@@ -31,6 +31,14 @@ HTTP 调用，并为每条关系保留源码位置、调用证据与分析置信
 - 节点邻接高亮、无关节点弱化；
 - 查看节点上下游、函数签名、源码片段和关系证据；
 - 默认只展示 `CONFIRMED` 与 `HIGH`，可切换显示较低置信度关系。
+- 单接口、多接口联合及任意节点影响范围的 AI 链路分析；
+- 业务概览、业务流程、业务规则、状态变化、业务数据流、失败流程、业务对象、
+  关联接口、风险与技术参考九类视图；
+- 业务分析优先解释“为什么调用、系统检查什么、业务数据如何变化、何时失败”，
+  类名、方法名和数据访问只放在最后的技术实现参考中；
+- AI 结论与 D3 节点/关系双向定位，点击分析条目即可高亮真实拓扑；
+- Provider 抽象支持开箱即用的本地证据分析，以及 OpenAI 兼容模型接口；
+- 结构化 Schema 校验、节点/关系/接口白名单、缓存、扫描版本过期和上下文预算控制。
 
 ## 技术栈
 
@@ -78,8 +86,10 @@ Set-Location backend
 4. 在左侧单选或多选接口；
 5. 中间画布显示接口到路由函数的第一层关系；
 6. 双击带 `+数量` 的节点继续展开，双击已展开节点进行折叠；
-7. 点击节点或关系，在右侧查看上下游、源码和调用证据；
-8. 需要排查不确定关系时，打开“全部置信度”。
+7. 在右侧“AI 分析”中生成单接口或多接口联合分析；
+8. 点击任意分析条目可定位图节点；选择图节点可反向定位对应分析项；
+9. 切换“节点详情”查看上下游、源码和调用证据；
+10. 需要排查不确定关系时，打开“全部置信度”。
 
 ## 验证
 
@@ -122,6 +132,12 @@ GET    /api/projects/{project_id}/nodes/{node_id}/downstream
 GET    /api/projects/{project_id}/nodes/{node_id}
 GET    /api/projects/{project_id}/nodes/{node_id}/source
 GET    /api/projects/{project_id}/relations/{relation_id}
+
+POST   /api/projects/{project_id}/endpoints/{endpoint_id}/ai-analysis
+POST   /api/projects/{project_id}/endpoints/ai-combined-analysis
+POST   /api/projects/{project_id}/nodes/{node_id}/ai-impact-analysis
+GET    /api/ai-analyses/{analysis_id}
+POST   /api/ai-analyses/{analysis_id}/regenerate
 ```
 
 ## 配置
@@ -136,6 +152,16 @@ PostgreSQL 示例：
 
 ```text
 postgresql+psycopg://user:password@localhost:5432/callscope
+```
+
+AI 分析默认使用 `CALLSCOPE_AI_PROVIDER=local`，不需要网络和密钥，所有结论严格
+来自已扫描的拓扑与源码证据。如需调用真实大模型，配置：
+
+```text
+CALLSCOPE_AI_PROVIDER=openai-compatible
+CALLSCOPE_AI_MODEL=你的模型名
+CALLSCOPE_AI_API_KEY=你的密钥
+CALLSCOPE_AI_BASE_URL=https://你的兼容接口/v1
 ```
 
 ## 文档

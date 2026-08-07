@@ -21,6 +21,8 @@ interface GraphState {
   selectedNodeDetail: NodeDetail | null;
   selectedSource: SourceData | null;
   selectedRelationDetail: RelationDetail | null;
+  aiHighlightedNodeIds: string[];
+  aiHighlightedEdgeIds: string[];
   loading: boolean;
   detailLoading: boolean;
   error: string | null;
@@ -32,6 +34,8 @@ interface GraphState {
   selectNode: (nodeId: string | null) => Promise<void>;
   selectEdge: (edgeId: string | null) => Promise<void>;
   setIncludeLowerConfidence: (enabled: boolean) => void;
+  setAIHighlights: (nodeIds: string[], edgeIds: string[]) => void;
+  clearAIHighlights: () => void;
   requestLayout: () => void;
   reset: () => void;
 }
@@ -47,6 +51,8 @@ const initialState = {
   selectedNodeDetail: null,
   selectedSource: null,
   selectedRelationDetail: null,
+  aiHighlightedNodeIds: [] as string[],
+  aiHighlightedEdgeIds: [] as string[],
   loading: false,
   detailLoading: false,
   error: null,
@@ -104,6 +110,8 @@ export const useGraphStore = create<GraphState>((set, get) => ({
         selectedNodeDetail: null,
         selectedSource: null,
         selectedRelationDetail: null,
+        aiHighlightedNodeIds: [],
+        aiHighlightedEdgeIds: [],
         loading: false,
         layoutVersion: state.layoutVersion + 1
       }));
@@ -310,6 +318,10 @@ export const useGraphStore = create<GraphState>((set, get) => ({
 
   setIncludeLowerConfidence: (includeLowerConfidence) =>
     set({ includeLowerConfidence }),
+  setAIHighlights: (aiHighlightedNodeIds, aiHighlightedEdgeIds) =>
+    set({ aiHighlightedNodeIds, aiHighlightedEdgeIds }),
+  clearAIHighlights: () =>
+    set({ aiHighlightedNodeIds: [], aiHighlightedEdgeIds: [] }),
   requestLayout: () =>
     set((state) => ({ layoutVersion: state.layoutVersion + 1 })),
   reset: () => set(initialState)

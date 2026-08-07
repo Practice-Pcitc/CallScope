@@ -20,6 +20,7 @@ from app.models.code_relation import CodeRelation
 from app.models.endpoint_node import EndpointNode
 from app.models.project import Project
 from app.models.scan_task import ScanTask
+from app.repositories.ai_analysis_repository import AIAnalysisRepository
 from app.repositories.endpoint_repository import EndpointRepository
 from app.repositories.graph_repository import GraphRepository
 from app.repositories.project_repository import ProjectRepository
@@ -271,6 +272,10 @@ def execute_scan_task(task_id: str) -> None:
             task.current_file = None
             task.finished_at = utc_now()
             project.active_revision_id = task.revision_id
+            AIAnalysisRepository(session).mark_project_stale(
+                project_id=project.id,
+                active_revision_id=task.revision_id,
+            )
             session.commit()
         except ScanLimitError as exc:
             _fail_task(

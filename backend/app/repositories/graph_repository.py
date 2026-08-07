@@ -73,6 +73,17 @@ class GraphRepository:
             )
         )
 
+    def endpoint_ids_for_nodes(self, node_ids: set[str]) -> list[str]:
+        if not node_ids:
+            return []
+        return list(
+            self.session.scalars(
+                select(EndpointNode.endpoint_id).where(
+                    EndpointNode.node_id.in_(node_ids)
+                )
+            )
+        )
+
     def nodes_by_ids(
         self,
         *,
