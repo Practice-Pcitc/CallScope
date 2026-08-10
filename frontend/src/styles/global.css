@@ -81,6 +81,28 @@ a {
   letter-spacing: 0.16em;
 }
 
+.header-actions,
+.header-link {
+  display: flex;
+  align-items: center;
+}
+
+.header-link {
+  gap: 7px;
+  padding: 7px 11px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: #959cab;
+  text-decoration: none;
+  font-size: 12px;
+}
+
+.header-link:hover {
+  border-color: #343947;
+  color: #c7bfff;
+  background: #171a22;
+}
+
 .app-main {
   flex: 1;
   min-height: 0;

@@ -17,6 +17,9 @@ node_modules/
 frontend/dist/
 frontend/.vite/
 frontend/.npm-cache/
+prompt-viewer/dist/
+prompt-viewer/.vite/
+prompt-viewer/.npm-cache/
 
 # Environment and editors
 .env
