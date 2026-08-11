@@ -1,5 +1,4 @@
 from functools import lru_cache
-from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -18,9 +17,6 @@ class Settings(BaseSettings):
     environment: str = "development"
     api_prefix: str = "/api"
     database_url: str = "sqlite:///./callscope.db"
-    prompt_history_database_path: str = str(
-        Path(__file__).resolve().parents[2] / "prompt_history.db"
-    )
     cors_origins: list[str] = ["http://localhost:5173"]
     max_scan_files: int = 10_000
     max_file_size_bytes: int = 2 * 1024 * 1024

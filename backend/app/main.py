@@ -14,7 +14,6 @@ from app.api.router import api_router
 from app.core.config import settings
 from app.core.database import check_database
 from app.core.exceptions import AppException
-from app.core.prompt_history_database import initialize_prompt_history_database
 from app.schemas.common import ErrorBody, ErrorEnvelope
 from app.services.scan_service import recover_interrupted_scans
 
@@ -23,11 +22,6 @@ from app.services.scan_service import recover_interrupted_scans
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     """启动时尽早验证数据库连接，避免服务带病运行。"""
     check_database()
-    try:
-        initialize_prompt_history_database()
-    except Exception:
-        # Prompt auditing is optional and must never prevent CallScope from starting.
-        pass
     recover_interrupted_scans()
     yield
 

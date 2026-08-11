@@ -166,7 +166,6 @@ CALLSCOPE_AI_BASE_URL=https://你的兼容接口/v1
 
 ## 文档
 
-- [Codex Prompt History 模块](docs/Prompt-History模块说明.md)
 - [需求与架构方案](docs/阶段一-需求与架构方案.md)
 - [项目骨架交付说明](docs/阶段二-项目骨架交付说明.md)
 - [项目导入与文件扫描](docs/阶段三-项目导入与文件扫描交付说明.md)
