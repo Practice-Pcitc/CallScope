@@ -10,7 +10,7 @@ const props = defineProps<{
 const emit = defineEmits<{ search: [filters: PromptFilters] }>();
 
 const form = reactive({
-  projectId: props.initialProjectId ?? "",
+  projectKey: props.initialProjectId ? `id:${props.initialProjectId}` : "",
   keyword: "",
   sessionId: "",
   range: [] as Date[]
@@ -19,14 +19,22 @@ const form = reactive({
 watch(
   () => props.initialProjectId,
   (value) => {
-    form.projectId = value ?? "";
+    form.projectKey = value ? `id:${value}` : "";
     if (value) submit();
   }
 );
 
 function submit() {
+  const projectId = form.projectKey.startsWith("id:")
+    ? form.projectKey.slice(3)
+    : undefined;
+  const projectName = form.projectKey.startsWith("name:")
+    ? form.projectKey.slice(5)
+    : undefined;
+
   emit("search", {
-    projectId: form.projectId || undefined,
+    projectId: projectId || undefined,
+    projectName: projectName || undefined,
     keyword: form.keyword.trim() || undefined,
     sessionId: form.sessionId.trim() || undefined,
     startTime: form.range[0]?.toISOString(),
@@ -35,7 +43,7 @@ function submit() {
 }
 
 function reset() {
-  form.projectId = "";
+  form.projectKey = "";
   form.keyword = "";
   form.sessionId = "";
   form.range = [];
@@ -45,12 +53,12 @@ function reset() {
 
 <template>
   <section class="filter-bar">
-    <el-select v-model="form.projectId" clearable placeholder="全部项目" @change="submit">
+    <el-select v-model="form.projectKey" clearable placeholder="全部项目" @change="submit">
       <el-option
         v-for="project in projects"
         :key="`${project.projectId}-${project.projectName}`"
         :label="`${project.projectName} · ${project.promptCount}`"
-        :value="project.projectId ?? ''"
+        :value="project.projectId ? `id:${project.projectId}` : `name:${project.projectName}`"
       />
     </el-select>
     <el-input

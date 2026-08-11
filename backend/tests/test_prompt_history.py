@@ -140,7 +140,7 @@ def test_lifecycle_session_and_tool_event_lists() -> None:
 
         sessions_response = client.get(
             "/api/prompt-history/sessions",
-            params={"sessionId": "session-lifecycle"},
+            params={"projectName": "order-system", "sessionId": "session-lifecycle"},
         )
         assert sessions_response.status_code == 200
         sessions = sessions_response.json()["data"]
@@ -150,7 +150,11 @@ def test_lifecycle_session_and_tool_event_lists() -> None:
 
         tools_response = client.get(
             "/api/prompt-history/tool-events",
-            params={"toolName": "shell", "status": "success"},
+            params={
+                "projectName": "order-system",
+                "toolName": "shell",
+                "status": "success",
+            },
         )
         assert tools_response.status_code == 200
         tools = tools_response.json()["data"]

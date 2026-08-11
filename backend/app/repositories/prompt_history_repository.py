@@ -96,6 +96,7 @@ class PromptHistoryRepository:
         page: int,
         page_size: int,
         project_id: str | None = None,
+        project_name: str | None = None,
         session_id: str | None = None,
         status: str | None = None,
         start_time: datetime | None = None,
@@ -106,6 +107,9 @@ class PromptHistoryRepository:
         if project_id:
             clauses.append("project_id = ?")
             parameters.append(project_id)
+        if project_name:
+            clauses.append("LOWER(project_name) = LOWER(?)")
+            parameters.append(project_name.strip())
         if session_id:
             clauses.append("session_id = ?")
             parameters.append(session_id.strip())
@@ -141,6 +145,7 @@ class PromptHistoryRepository:
         page: int,
         page_size: int,
         project_id: str | None = None,
+        project_name: str | None = None,
         session_id: str | None = None,
         tool_name: str | None = None,
         status: str | None = None,
@@ -152,6 +157,9 @@ class PromptHistoryRepository:
         if project_id:
             clauses.append("project_id = ?")
             parameters.append(project_id)
+        if project_name:
+            clauses.append("LOWER(project_name) = LOWER(?)")
+            parameters.append(project_name.strip())
         if session_id:
             clauses.append("session_id = ?")
             parameters.append(session_id.strip())

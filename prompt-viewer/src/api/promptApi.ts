@@ -54,6 +54,7 @@ export async function getCodexSessions(
     {
       params: {
         projectId: filters.projectId,
+        projectName: filters.projectName,
         sessionId: filters.sessionId,
         startTime: filters.startTime,
         endTime: filters.endTime,
@@ -75,6 +76,7 @@ export async function getToolEvents(
     {
       params: {
         projectId: filters.projectId,
+        projectName: filters.projectName,
         sessionId: filters.sessionId,
         startTime: filters.startTime,
         endTime: filters.endTime,
