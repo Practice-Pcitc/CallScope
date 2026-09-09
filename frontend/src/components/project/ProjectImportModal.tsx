@@ -16,7 +16,7 @@ export function ProjectImportModal({
   open,
   loading,
   onCancel,
-  onSubmit
+  onSubmit,
 }: ProjectImportModalProps) {
   const [form] = Form.useForm<ProjectCreate>();
 
@@ -53,7 +53,7 @@ export function ProjectImportModal({
           label="项目名称"
           rules={[
             { required: true, message: "请输入项目名称" },
-            { max: 120, message: "项目名称最多 120 个字符" }
+            { max: 120, message: "项目名称最多 120 个字符" },
           ]}
         >
           <Input placeholder="例如：用户中心服务" autoFocus />
@@ -62,9 +62,7 @@ export function ProjectImportModal({
           name="rootPath"
           label="项目绝对路径"
           extra={
-            <Text type="secondary">
-              Windows 示例：D:\work\user-service
-            </Text>
+            <Text type="secondary">Windows 示例：D:\work\user-service</Text>
           }
           rules={[{ required: true, message: "请输入项目绝对路径" }]}
         >

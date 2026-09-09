@@ -47,11 +47,5 @@ export function useScanPolling(projectId: string | undefined) {
         window.clearTimeout(timer);
       }
     };
-  }, [
-    activeScanId,
-    fetchEndpoints,
-    fetchProject,
-    projectId,
-    refreshScan
-  ]);
+  }, [activeScanId, fetchEndpoints, fetchProject, projectId, refreshScan]);
 }

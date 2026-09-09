@@ -9,10 +9,10 @@ class ProjectCreate(ApiModel):
     name: str = Field(min_length=1, max_length=120)
     root_path: str = Field(min_length=1, max_length=4096)
 
-    @field_validator("name", "root_path")
+    @field_validator("name", "root_path", mode="before")
     @classmethod
     def strip_text(cls, value: str) -> str:
-        return value.strip()
+        return value.strip() if isinstance(value, str) else value
 
 
 class ProjectData(ApiModel):
@@ -44,4 +44,3 @@ class ProjectListData(ApiModel):
 
 class ProjectListResponse(ApiModel):
     data: ProjectListData
-

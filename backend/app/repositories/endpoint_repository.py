@@ -49,9 +49,7 @@ class EndpointRepository:
         statement = select(ApiEndpoint).where(*conditions)
         if tag:
             all_items = list(
-                self.session.scalars(
-                    statement.order_by(ApiEndpoint.path, ApiEndpoint.http_method)
-                )
+                self.session.scalars(statement.order_by(ApiEndpoint.path, ApiEndpoint.http_method))
             )
             tagged_items = [item for item in all_items if tag in item.tags]
             return tagged_items[offset : offset + limit], len(tagged_items)
@@ -64,9 +62,7 @@ class EndpointRepository:
             )
         )
         total = (
-            self.session.scalar(
-                select(func.count()).select_from(ApiEndpoint).where(*conditions)
-            )
+            self.session.scalar(select(func.count()).select_from(ApiEndpoint).where(*conditions))
             or 0
         )
         return items, total

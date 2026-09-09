@@ -12,11 +12,11 @@ export interface ApiErrorEnvelope {
 }
 
 export const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL ?? "/api",
+  baseURL: import.meta.env.VITE_API_BASE_URL ?? "/api/v1",
   timeout: 15_000,
   headers: {
-    "Content-Type": "application/json"
-  }
+    "Content-Type": "application/json",
+  },
 });
 
 export function getApiError(error: unknown): ApiErrorBody {
@@ -29,7 +29,6 @@ export function getApiError(error: unknown): ApiErrorBody {
   return {
     code: "NETWORK_ERROR",
     message: "无法连接后端服务",
-    requestId: ""
+    requestId: "",
   };
 }
-

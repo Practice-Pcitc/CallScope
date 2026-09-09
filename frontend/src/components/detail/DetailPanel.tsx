@@ -3,7 +3,7 @@ import {
   FileTextOutlined,
   LinkOutlined,
   NodeIndexOutlined,
-  ProfileOutlined
+  ProfileOutlined,
 } from "@ant-design/icons";
 import {
   Descriptions,
@@ -12,7 +12,7 @@ import {
   Space,
   Spin,
   Tag,
-  Typography
+  Typography,
 } from "antd";
 
 import { useEndpointStore } from "../../stores/endpointStore";
@@ -24,7 +24,7 @@ const { Paragraph, Text, Title } = Typography;
 
 function metadataText(
   metadata: Record<string, unknown>,
-  key: string
+  key: string,
 ): string | null {
   const value = metadata[key];
   return typeof value === "string" && value.trim() ? value : null;
@@ -32,7 +32,7 @@ function metadataText(
 
 function metadataList(
   metadata: Record<string, unknown>,
-  key: string
+  key: string,
 ): string[] {
   const value = metadata[key];
   return Array.isArray(value)
@@ -42,14 +42,14 @@ function metadataList(
 
 function BusinessLogic({
   metadata,
-  fallback
+  fallback,
 }: {
   metadata: Record<string, unknown>;
   fallback: string;
 }) {
   const logic = cleanDisplayText(
     metadataText(metadata, "businessLogic"),
-    fallback
+    fallback,
   );
   const steps = metadataList(metadata, "businessSteps")
     .map((step) => cleanDisplayText(step))
@@ -173,7 +173,9 @@ function EndpointDetail({ endpoint }: { endpoint: Endpoint }) {
                   dependency.providerExpression ??
                   "未解析"}
               </Text>
-              <Tag color={dependency.confidence === "CONFIRMED" ? "green" : "gold"}>
+              <Tag
+                color={dependency.confidence === "CONFIRMED" ? "green" : "gold"}
+              >
                 {dependency.confidence}
               </Tag>
             </div>
@@ -194,7 +196,7 @@ export function DetailPanel() {
     selectedNodeDetail,
     selectedSource,
     selectedRelationDetail,
-    detailLoading
+    detailLoading,
   } = useGraphStore();
 
   const showEndpoint =
@@ -217,7 +219,9 @@ export function DetailPanel() {
                 <Tag color={selectedNodeDetail.shared ? "magenta" : "blue"}>
                   {selectedNodeDetail.type}
                 </Tag>
-                {selectedNodeDetail.shared && <Tag color="magenta">公共节点</Tag>}
+                {selectedNodeDetail.shared && (
+                  <Tag color="magenta">公共节点</Tag>
+                )}
               </Space>
               <Title level={4} className="endpoint-detail-path">
                 {selectedNodeDetail.name}
@@ -274,7 +278,11 @@ export function DetailPanel() {
                             edge.target}
                         </Text>
                         {edge.evidence && (
-                          <Text type="secondary" className="call-evidence" ellipsis>
+                          <Text
+                            type="secondary"
+                            className="call-evidence"
+                            ellipsis
+                          >
                             {edge.evidence}
                           </Text>
                         )}
@@ -291,7 +299,9 @@ export function DetailPanel() {
                 <FileTextOutlined />
                 <Text copyable>
                   {selectedSource?.filePath ?? "无源码位置"}
-                  {selectedSource?.startLine ? `:${selectedSource.startLine}` : ""}
+                  {selectedSource?.startLine
+                    ? `:${selectedSource.startLine}`
+                    : ""}
                 </Text>
               </div>
               <pre className="source-code">

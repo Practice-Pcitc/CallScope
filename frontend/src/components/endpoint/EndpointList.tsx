@@ -9,7 +9,7 @@ import {
   Spin,
   Tag,
   Tooltip,
-  Typography
+  Typography,
 } from "antd";
 import { useEffect, useMemo } from "react";
 import { useParams } from "react-router-dom";
@@ -28,20 +28,20 @@ const methodColors: Record<HttpMethod, string> = {
   DELETE: "red",
   PATCH: "purple",
   OPTIONS: "cyan",
-  HEAD: "default"
+  HEAD: "default",
 };
 
 const methodOptions = [
   { value: "ALL", label: "全部方法" },
   ...(["GET", "POST", "PUT", "DELETE", "PATCH"] as HttpMethod[]).map(
-    (method) => ({ value: method, label: method })
-  )
+    (method) => ({ value: method, label: method }),
+  ),
 ];
 
 export function EndpointList() {
   const { projectId } = useParams();
   const activeRevisionId = useProjectStore(
-    (state) => state.activeProject?.activeRevisionId
+    (state) => state.activeProject?.activeRevisionId,
   );
   const {
     endpoints,
@@ -58,24 +58,21 @@ export function EndpointList() {
     toggleSelected,
     selectEndpoint,
     selectAll,
-    clearSelection
+    clearSelection,
   } = useEndpointStore();
   const groupedEndpoints = useMemo(
     () =>
       Object.entries(
         endpoints.reduce<Record<string, typeof endpoints>>(
           (groups, endpoint) => {
-            const category = cleanDisplayText(
-              endpoint.moduleName,
-              "未分类"
-            );
+            const category = cleanDisplayText(endpoint.moduleName, "未分类");
             groups[category] = [...(groups[category] ?? []), endpoint];
             return groups;
           },
-          {}
-        )
+          {},
+        ),
       ),
-    [endpoints]
+    [endpoints],
   );
 
   useEffect(() => {
@@ -92,7 +89,7 @@ export function EndpointList() {
     filters.httpMethod,
     filters.module,
     filters.search,
-    projectId
+    projectId,
   ]);
 
   return (
@@ -123,8 +120,8 @@ export function EndpointList() {
             { value: "", label: "全部业务分类" },
             ...modules.map((module) => ({
               value: module,
-              label: cleanDisplayText(module, "未分类")
-            }))
+              label: cleanDisplayText(module, "未分类"),
+            })),
           ]}
           onChange={setModule}
           style={{ width: "58%" }}
@@ -202,11 +199,17 @@ export function EndpointList() {
                         <Text className="endpoint-function" ellipsis>
                           {cleanDisplayText(
                             endpoint.summary,
-                            endpoint.functionName
+                            endpoint.functionName,
                           )}
                         </Text>
-                        <Tooltip title={`${endpoint.filePath}:${endpoint.startLine}`}>
-                          <Text type="secondary" ellipsis className="endpoint-file">
+                        <Tooltip
+                          title={`${endpoint.filePath}:${endpoint.startLine}`}
+                        >
+                          <Text
+                            type="secondary"
+                            ellipsis
+                            className="endpoint-file"
+                          >
                             {endpoint.filePath}:{endpoint.startLine}
                           </Text>
                         </Tooltip>

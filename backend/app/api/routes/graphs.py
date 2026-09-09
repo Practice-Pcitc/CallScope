@@ -17,7 +17,7 @@ router = APIRouter(prefix="/projects")
 
 
 @router.get(
-    "/{project_id}/endpoints/{endpoint_id}/graph",
+    "/{project_id}/endpoints/{endpoint_id}/graphs",
     response_model=GraphResponse,
     summary="加载接口第一层拓扑",
 )
@@ -25,9 +25,7 @@ def endpoint_graph(
     project_id: str,
     endpoint_id: str,
     session: Annotated[Session, Depends(get_db)],
-    include_lower_confidence: Annotated[
-        bool, Query(alias="includeLowerConfidence")
-    ] = False,
+    include_lower_confidence: Annotated[bool, Query(alias="includeLowerConfidence")] = False,
     depth: Annotated[int, Query(ge=1, le=8)] = 1,
 ) -> GraphResponse:
     data = GraphService(session).endpoint_graph(
@@ -40,7 +38,7 @@ def endpoint_graph(
 
 
 @router.post(
-    "/{project_id}/graph/combined",
+    "/{project_id}/graphs/combined",
     response_model=GraphResponse,
     summary="合并多个接口的第一层拓扑",
 )
@@ -67,9 +65,7 @@ def node_children(
     project_id: str,
     node_id: str,
     session: Annotated[Session, Depends(get_db)],
-    include_lower_confidence: Annotated[
-        bool, Query(alias="includeLowerConfidence")
-    ] = False,
+    include_lower_confidence: Annotated[bool, Query(alias="includeLowerConfidence")] = False,
 ) -> GraphResponse:
     data = GraphService(session).neighbors(
         project_id=project_id,
@@ -89,9 +85,7 @@ def node_upstream(
     project_id: str,
     node_id: str,
     session: Annotated[Session, Depends(get_db)],
-    include_lower_confidence: Annotated[
-        bool, Query(alias="includeLowerConfidence")
-    ] = False,
+    include_lower_confidence: Annotated[bool, Query(alias="includeLowerConfidence")] = False,
 ) -> GraphResponse:
     data = GraphService(session).neighbors(
         project_id=project_id,
@@ -111,9 +105,7 @@ def node_downstream(
     project_id: str,
     node_id: str,
     session: Annotated[Session, Depends(get_db)],
-    include_lower_confidence: Annotated[
-        bool, Query(alias="includeLowerConfidence")
-    ] = False,
+    include_lower_confidence: Annotated[bool, Query(alias="includeLowerConfidence")] = False,
 ) -> GraphResponse:
     return node_children(
         project_id,

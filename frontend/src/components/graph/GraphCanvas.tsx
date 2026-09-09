@@ -3,9 +3,18 @@ import {
   CompressOutlined,
   MinusOutlined,
   PlusOutlined,
-  ReloadOutlined
+  ReloadOutlined,
 } from "@ant-design/icons";
-import { Alert, Button, Empty, Space, Spin, Switch, Tooltip, Typography } from "antd";
+import {
+  Alert,
+  Button,
+  Empty,
+  Space,
+  Spin,
+  Switch,
+  Tooltip,
+  Typography,
+} from "antd";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useParams } from "react-router-dom";
 
@@ -39,7 +48,7 @@ export function GraphCanvas() {
     selectNode,
     selectEdge,
     setIncludeLowerConfidence,
-    requestLayout
+    requestLayout,
   } = useGraphStore();
 
   useEffect(() => {
@@ -53,19 +62,19 @@ export function GraphCanvas() {
       visibleNodeIds
         .map((id) => nodesById[id])
         .filter((node): node is GraphNode => Boolean(node)),
-    [nodesById, visibleNodeIds]
+    [nodesById, visibleNodeIds],
   );
   const visible = useMemo(() => new Set(visibleNodeIds), [visibleNodeIds]);
   const edges = useMemo(
     () =>
       Object.values(edgesById).filter(
-        (edge) => visible.has(edge.source) && visible.has(edge.target)
+        (edge) => visible.has(edge.source) && visible.has(edge.target),
       ),
-    [edgesById, visible]
+    [edgesById, visible],
   );
   const handleNodeClick = useCallback(
     (nodeId: string) => void selectNode(nodeId || null),
-    [selectNode]
+    [selectNode],
   );
   const handleNodeToggle = useCallback(
     (node: GraphNode) => {
@@ -75,11 +84,11 @@ export function GraphCanvas() {
         void expandNode(node.id);
       }
     },
-    [collapseNode, expandNode]
+    [collapseNode, expandNode],
   );
   const handleEdgeClick = useCallback(
     (edgeId: string) => void selectEdge(edgeId),
-    [selectEdge]
+    [selectEdge],
   );
   const controls = useD3Graph({
     svgRef,
@@ -93,7 +102,7 @@ export function GraphCanvas() {
     layoutVersion,
     onNodeClick: handleNodeClick,
     onNodeToggle: handleNodeToggle,
-    onEdgeClick: handleEdgeClick
+    onEdgeClick: handleEdgeClick,
   });
 
   useEffect(() => {
@@ -142,16 +151,32 @@ export function GraphCanvas() {
             </Space>
           </Tooltip>
           <Tooltip title="放大">
-            <Button type="text" icon={<PlusOutlined />} onClick={controls.zoomIn} />
+            <Button
+              type="text"
+              icon={<PlusOutlined />}
+              onClick={controls.zoomIn}
+            />
           </Tooltip>
           <Tooltip title="缩小">
-            <Button type="text" icon={<MinusOutlined />} onClick={controls.zoomOut} />
+            <Button
+              type="text"
+              icon={<MinusOutlined />}
+              onClick={controls.zoomOut}
+            />
           </Tooltip>
           <Tooltip title="适配画布">
-            <Button type="text" icon={<CompressOutlined />} onClick={controls.fit} />
+            <Button
+              type="text"
+              icon={<CompressOutlined />}
+              onClick={controls.fit}
+            />
           </Tooltip>
           <Tooltip title="回到原点">
-            <Button type="text" icon={<AimOutlined />} onClick={controls.center} />
+            <Button
+              type="text"
+              icon={<AimOutlined />}
+              onClick={controls.center}
+            />
           </Tooltip>
           <Tooltip title="重新布局">
             <Button
@@ -194,10 +219,22 @@ export function GraphCanvas() {
         )}
         {nodes.length > 0 && (
           <div className="graph-legend" aria-label="节点图例">
-            <span><i className="legend-api" />API</span>
-            <span><i className="legend-service" />Service</span>
-            <span><i className="legend-repository" />Repository</span>
-            <span><i className="legend-resource" />外部资源</span>
+            <span>
+              <i className="legend-api" />
+              API
+            </span>
+            <span>
+              <i className="legend-service" />
+              Service
+            </span>
+            <span>
+              <i className="legend-repository" />
+              Repository
+            </span>
+            <span>
+              <i className="legend-resource" />
+              外部资源
+            </span>
             <Text type="secondary">双击节点展开 / 折叠</Text>
           </div>
         )}

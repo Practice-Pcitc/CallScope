@@ -1,11 +1,5 @@
 export type HttpMethod =
-  | "GET"
-  | "POST"
-  | "PUT"
-  | "DELETE"
-  | "PATCH"
-  | "OPTIONS"
-  | "HEAD";
+  "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" | "HEAD";
 
 export interface EndpointParameter {
   name: string;
@@ -57,4 +51,3 @@ export interface EndpointFilters {
   httpMethod: HttpMethod | "ALL";
   module: string;
 }
-

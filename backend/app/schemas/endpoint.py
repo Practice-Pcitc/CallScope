@@ -60,4 +60,3 @@ class EndpointListData(ApiModel):
 
 class EndpointListResponse(ApiModel):
     data: EndpointListData
-

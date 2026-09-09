@@ -1,174 +1,88 @@
 # CallScope（调用视界）
 
-CallScope 是一个面向 FastAPI 与 Spring Boot 项目的接口调用拓扑静态分析平台。它从 HTTP
-接口入口出发，按需展示路由函数、Service、Repository、数据库、Redis 和外部
-HTTP 调用，并为每条关系保留源码位置、调用证据与分析置信度。
+从 HTTP 接口入口查看 FastAPI、Spring Boot 项目的静态调用关系，结合源码证据理解业务流程。
 
-当前基础拓扑与 AI 链路分析已完成。本版本不包含 MCP、RAG 和云端部署。
+![合成 FastAPI 样例的拓扑与 AI 分析](docs/screenshots/workspace.png)
 
-## 已实现能力
+截图来自本地浏览器，使用仓库合成样例和本地证据分析。
 
-- 导入、查询和移除本地项目；移除记录不会删除用户源码；
-- 自动识别 Python/FastAPI 与 Java/Spring 项目；
-- 安全遍历 Python、Java 文件，限制文件数量、目录项和单文件大小；
-- 忽略虚拟环境、构建目录、缓存目录和版本控制目录；
-- 扫描任务、实时进度、错误摘要与重新扫描；
-- 基于 Tree-sitter AST 识别 FastAPI、APIRouter、路由装饰器和多层
-  `include_router()`；
-- 提取请求方法、完整路径、参数、返回模型、tags、Depends 和源码位置；
-- 识别 Spring `@RestController`、类/方法级映射、请求参数和返回类型；
-- 解析 Java Controller → Service → Mapper/Repository 的基础调用关系；
-- 提取函数、类、类方法、Service、Repository 和 Pydantic Model；
-- 基于 import、类型注解、变量实例化和 Depends 做基础符号解析；
-- 识别普通调用、依赖、校验、返回、数据库读写、Redis 和外部 HTTP 调用；
-- 无法确定的目标保存为 `UNRESOLVED`，并按
-  `CONFIRMED / HIGH / MEDIUM / LOW` 标记置信度；
-- 使用 SQLAlchemy 2 持久化带扫描修订版本的节点、关系和接口入口映射；
-- 使用 NetworkX 进行图层级和循环安全处理；
-- D3.js SVG 分层拓扑、箭头、缩放、平移和节点拖拽；
-- 双击节点逐层加载，前端折叠后代节点，避免一次加载整张图；
-- 多接口选择、图合并、节点和边去重、公共节点标识；
-- 节点邻接高亮、无关节点弱化；
-- 查看节点上下游、函数签名、源码片段和关系证据；
-- 默认只展示 `CONFIRMED` 与 `HIGH`，可切换显示较低置信度关系。
-- 单接口、多接口联合及任意节点影响范围的 AI 链路分析；
-- 业务概览、业务流程、业务规则、状态变化、业务数据流、失败流程、业务对象、
-  关联接口、风险与技术参考九类视图；
-- 业务分析优先解释“为什么调用、系统检查什么、业务数据如何变化、何时失败”，
-  类名、方法名和数据访问只放在最后的技术实现参考中；
-- AI 结论与 D3 节点/关系双向定位，点击分析条目即可高亮真实拓扑；
-- Provider 抽象支持开箱即用的本地证据分析，以及 OpenAI 兼容模型接口；
-- 结构化 Schema 校验、节点/关系/接口白名单、缓存、扫描版本过期和上下文预算控制。
+## 核心功能
 
-## 技术栈
+- 导入本地项目并后台扫描，不执行目标代码；删除记录不会删除源码。
+- 识别接口、函数与数据库、Redis、外部 HTTP 调用，保留位置、证据和置信度。
+- 逐层展开、折叠和合并调用拓扑，查看节点上下游及源码。
+- 根据已扫描证据生成单接口、多接口及节点影响分析，支持本地分析和兼容模型服务。
+- 缓存分析结果，扫描更新后标记过期，外部模型任务支持状态查询与失败后重试。
 
-- 后端：Python 3.11+、FastAPI、SQLAlchemy 2、Pydantic 2、Alembic、
-  Tree-sitter、NetworkX；
-- 数据库：开发环境默认 SQLite，已预留 PostgreSQL 驱动；
-- 前端：React 19、TypeScript、Vite、D3.js、Zustand、Axios、
-  React Router、Ant Design。
+```mermaid
+flowchart LR
+    A[本地源码] --> B[安全扫描与静态解析]
+    B --> C[SQLite 调用图与证据]
+    C --> D[React / D3 交互拓扑]
+    C --> E[本地分析或外部模型]
+    E --> D
+```
 
-## 启动
+技术栈：Python 3.11+、FastAPI、SQLAlchemy、Alembic、Tree-sitter、NetworkX；React 19、TypeScript、Vite、D3、Zustand、Ant Design。
 
-后端：
+## 本地启动
+
+需要 Python 3.11+、uv、Node.js 22.12+ 和 npm。以下命令从项目根目录执行；Windows 可用 `npm.cmd` 代替 `npm`。
+
+后端终端：
 
 ```powershell
-Set-Location backend
-uv sync
+cd backend
+uv sync --frozen
+# 可选：首次配置时复制，已有 .env 请直接编辑，避免覆盖
+Copy-Item .env.example .env
 uv run alembic upgrade head
-uv run uvicorn app.main:app --reload
+uv run uvicorn app.main:app --host 127.0.0.1 --reload
 ```
 
-前端（另一个终端）：
+前端另开终端，从项目根目录执行：
 
 ```powershell
-Set-Location frontend
-npm.cmd install
-npm.cmd run dev
+cd frontend
+npm ci
+npm run dev
 ```
 
-打开 `http://localhost:5173`。Swagger 位于
-`http://127.0.0.1:8000/docs`。
+打开 [本地页面](http://localhost:5173)，[接口文档](http://127.0.0.1:8000/docs)。默认无需模型密钥。
+在页面导入 `backend/tests/fixtures/fastapi_sample` 的本机绝对路径可体验合成示例。
 
-如果依赖已经安装在仓库自带环境中，也可以使用：
+## 使用边界与配置
 
-```powershell
-Set-Location backend
-.\.venv\Scripts\alembic.exe upgrade head
-.\.venv\Scripts\uvicorn.exe app.main:app --reload
-```
+这是单用户本地工具，没有登录和多租户隔离；后端只绑定回环地址，勿直接暴露到公网或局域网。项目 ID 校验用于防止跨项目混用节点，不能替代用户认证。
 
-## 使用流程
+默认 `CALLSCOPE_AI_PROVIDER=local` 只根据证据生成分析。启用 `openai-compatible` 时，在 `backend/.env` 配置模型名、密钥和服务地址；所选拓扑及启用的源码片段会发送给该服务，应只分析可共享的代码。默认不保存原始 Prompt 和模型原始响应；结构化结果可能包含业务信息，启动时清理超过 `CALLSCOPE_AI_RETENTION_DAYS`（默认 30 天）的分析记录。删除项目会级联移除数据库中的扫描与分析记录。
 
-1. 在项目页点击“导入本地项目”；
-2. 填写名称和 FastAPI 或 Spring Boot 项目的绝对路径；
-3. 启动扫描并等待状态变为“扫描完成”；
-4. 在左侧单选或多选接口；
-5. 中间画布显示接口到路由函数的第一层关系；
-6. 双击带 `+数量` 的节点继续展开，双击已展开节点进行折叠；
-7. 在右侧“AI 分析”中生成单接口或多接口联合分析；
-8. 点击任意分析条目可定位图节点；选择图节点可反向定位对应分析项；
-9. 切换“节点详情”查看上下游、源码和调用证据；
-10. 需要排查不确定关系时，打开“全部置信度”。
+前端可选配置见 `frontend/.env.example`，只允许公开变量。后端优先使用 `backend/.env`，根目录 `.env` 是兼容回退；系统环境变量优先级最高。SQLite 默认文件位于启动后端时的工作目录，因此请从 `backend` 启动。
 
-## 验证
+静态分析无法完整还原动态分派、反射及运行期条件，AI 结论需要结合源码核实。本项目没有 RAG、MCP、会话记忆或自主工具执行，因此不创建这些空模块。
 
-后端：
+本次规范整理由项目维护者提出要求，Codex 辅助完成重构、文档和自动化测试；不据此声明此前全部代码的个人独立开发经历。
+
+## 验证和开发
 
 ```powershell
-Set-Location backend
-uv run alembic upgrade head
-uv run ruff check app tests
+# backend 目录
+uv run ruff check app tests alembic
+uv run ruff format --check app tests alembic
 uv run pytest
+
+# frontend 目录
+npm run format:check
+npm test
+npm run build
+npm run test:e2e
 ```
 
-前端：
+Windows 浏览器测试默认使用已安装的 Edge；CI 安装 Chromium。测试使用合成示例与 Fake 模型，不调用付费模型。
 
-```powershell
-Set-Location frontend
-npm.cmd run typecheck
-npm.cmd run build
-```
-
-## 主要 API
-
-```text
-POST   /api/projects
-GET    /api/projects
-GET    /api/projects/{project_id}
-DELETE /api/projects/{project_id}
-
-POST   /api/projects/{project_id}/scan
-GET    /api/projects/{project_id}/scan-status
-
-GET    /api/projects/{project_id}/endpoints
-GET    /api/projects/{project_id}/endpoints/{endpoint_id}
-
-GET    /api/projects/{project_id}/endpoints/{endpoint_id}/graph
-POST   /api/projects/{project_id}/graph/combined
-GET    /api/projects/{project_id}/nodes/{node_id}/children
-GET    /api/projects/{project_id}/nodes/{node_id}/upstream
-GET    /api/projects/{project_id}/nodes/{node_id}/downstream
-GET    /api/projects/{project_id}/nodes/{node_id}
-GET    /api/projects/{project_id}/nodes/{node_id}/source
-GET    /api/projects/{project_id}/relations/{relation_id}
-
-POST   /api/projects/{project_id}/endpoints/{endpoint_id}/ai-analysis
-POST   /api/projects/{project_id}/endpoints/ai-combined-analysis
-POST   /api/projects/{project_id}/nodes/{node_id}/ai-impact-analysis
-GET    /api/ai-analyses/{analysis_id}
-POST   /api/ai-analyses/{analysis_id}/regenerate
-```
-
-## 配置
-
-复制根目录 `.env.example` 为 `.env`。默认数据库：
-
-```text
-sqlite:///./callscope.db
-```
-
-PostgreSQL 示例：
-
-```text
-postgresql+psycopg://user:password@localhost:5432/callscope
-```
-
-AI 分析默认使用 `CALLSCOPE_AI_PROVIDER=local`，不需要网络和密钥，所有结论严格
-来自已扫描的拓扑与源码证据。如需调用真实大模型，配置：
-
-```text
-CALLSCOPE_AI_PROVIDER=openai-compatible
-CALLSCOPE_AI_MODEL=你的模型名
-CALLSCOPE_AI_API_KEY=你的密钥
-CALLSCOPE_AI_BASE_URL=https://你的兼容接口/v1
-```
-
-## 文档
-
-- [需求与架构方案](docs/阶段一-需求与架构方案.md)
-- [项目骨架交付说明](docs/阶段二-项目骨架交付说明.md)
-- [项目导入与文件扫描](docs/阶段三-项目导入与文件扫描交付说明.md)
-- [FastAPI 接口识别](docs/阶段四-FastAPI接口识别交付说明.md)
-- [Java Spring 支持说明](docs/Java-Spring支持说明.md)
-- [MVP 最终交付说明](docs/MVP-最终交付说明.md)
+- [架构与规范适配](docs/architecture.md)
+- [API 与版本迁移](docs/api.md)
+- [数据库与迁移](docs/database.md)
+- [本地运行与维护](docs/development.md)
+- [规范核对记录](docs/standards-review.md)
+- [变更记录](CHANGELOG.md)

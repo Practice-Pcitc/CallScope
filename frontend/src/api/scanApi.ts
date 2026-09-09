@@ -8,16 +8,15 @@ interface ScanTaskResponse {
 export const scanApi = {
   async start(projectId: string): Promise<ScanTask> {
     const response = await apiClient.post<ScanTaskResponse>(
-      `/projects/${projectId}/scan`
+      `/projects/${projectId}/scans`,
     );
     return response.data.data;
   },
 
   async getStatus(projectId: string): Promise<ScanTask> {
     const response = await apiClient.get<ScanTaskResponse>(
-      `/projects/${projectId}/scan-status`
+      `/projects/${projectId}/scans/latest`,
     );
     return response.data.data;
-  }
+  },
 };
-

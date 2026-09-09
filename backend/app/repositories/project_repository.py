@@ -1,6 +1,7 @@
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
+from app.core.enums import ProjectScanStatus
 from app.models.project import Project
 
 
@@ -39,3 +40,9 @@ class ProjectRepository:
     def delete(self, project: Project) -> None:
         self.session.delete(project)
 
+    def mark_scanning_failed(self) -> None:
+        self.session.execute(
+            update(Project)
+            .where(Project.scan_status == ProjectScanStatus.SCANNING.value)
+            .values(scan_status=ProjectScanStatus.FAILED.value)
+        )

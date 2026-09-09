@@ -67,4 +67,3 @@ class EndpointService:
                 status_code=404,
             )
         return endpoint
-

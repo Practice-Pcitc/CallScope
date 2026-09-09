@@ -67,15 +67,9 @@ def upgrade() -> None:
         sa.Column("evidence", sa.Text(), nullable=True),
         sa.Column("metadata", sa.JSON(), nullable=False),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
-        sa.ForeignKeyConstraint(
-            ["project_id"], ["projects.id"], ondelete="CASCADE"
-        ),
-        sa.ForeignKeyConstraint(
-            ["source_node_id"], ["code_nodes.id"], ondelete="CASCADE"
-        ),
-        sa.ForeignKeyConstraint(
-            ["target_node_id"], ["code_nodes.id"], ondelete="CASCADE"
-        ),
+        sa.ForeignKeyConstraint(["project_id"], ["projects.id"], ondelete="CASCADE"),
+        sa.ForeignKeyConstraint(["source_node_id"], ["code_nodes.id"], ondelete="CASCADE"),
+        sa.ForeignKeyConstraint(["target_node_id"], ["code_nodes.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint(
             "project_id",
@@ -102,12 +96,8 @@ def upgrade() -> None:
         sa.Column("id", sa.String(length=36), nullable=False),
         sa.Column("endpoint_id", sa.String(length=36), nullable=False),
         sa.Column("node_id", sa.String(length=36), nullable=False),
-        sa.ForeignKeyConstraint(
-            ["endpoint_id"], ["api_endpoints.id"], ondelete="CASCADE"
-        ),
-        sa.ForeignKeyConstraint(
-            ["node_id"], ["code_nodes.id"], ondelete="CASCADE"
-        ),
+        sa.ForeignKeyConstraint(["endpoint_id"], ["api_endpoints.id"], ondelete="CASCADE"),
+        sa.ForeignKeyConstraint(["node_id"], ["code_nodes.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("endpoint_id", name="uq_endpoint_node_endpoint"),
     )
@@ -120,4 +110,3 @@ def downgrade() -> None:
     op.drop_table("code_relations")
     op.drop_index("ix_code_nodes_project_revision_type", table_name="code_nodes")
     op.drop_table("code_nodes")
-

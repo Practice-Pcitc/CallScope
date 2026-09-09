@@ -22,9 +22,7 @@ class AIAnalysis(Base):
         ),
     )
 
-    id: Mapped[str] = mapped_column(
-        String(36), primary_key=True, default=lambda: str(uuid4())
-    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
     project_id: Mapped[str] = mapped_column(
         String(36),
         ForeignKey("projects.id", ondelete="CASCADE"),
@@ -44,12 +42,8 @@ class AIAnalysis(Base):
     cache_key: Mapped[str] = mapped_column(String(64), nullable=False)
     result: Mapped[dict[str, Any] | None] = mapped_column(JSON)
     error_message: Mapped[str | None] = mapped_column(Text)
-    token_usage: Mapped[dict[str, Any]] = mapped_column(
-        JSON, nullable=False, default=dict
-    )
-    invalid_reference_count: Mapped[int] = mapped_column(
-        Integer, nullable=False, default=0
-    )
+    token_usage: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
+    invalid_reference_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=utc_now
     )

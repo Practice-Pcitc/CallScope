@@ -2,7 +2,7 @@ import {
   BranchesOutlined,
   ReloadOutlined,
   RobotOutlined,
-  ThunderboltOutlined
+  ThunderboltOutlined,
 } from "@ant-design/icons";
 import {
   Alert,
@@ -15,7 +15,7 @@ import {
   Spin,
   Tabs,
   Tag,
-  Typography
+  Typography,
 } from "antd";
 import { useCallback, useEffect, useMemo } from "react";
 import { useParams } from "react-router-dom";
@@ -26,7 +26,7 @@ import { useGraphStore } from "../../stores/graphStore";
 import {
   AnalysisCards,
   type AnalysisCardData,
-  type FocusBinding
+  type FocusBinding,
 } from "./AnalysisCards";
 
 const { Paragraph, Text, Title } = Typography;
@@ -38,13 +38,13 @@ interface LocatedBinding extends FocusBinding {
 
 const binding = (nodeIds: string[]): FocusBinding => ({
   nodeIds,
-  edgeIds: []
+  edgeIds: [],
 });
 
 function DataColumn({
   title,
   items,
-  empty
+  empty,
 }: {
   title: string;
   items: string[];
@@ -84,7 +84,7 @@ export function AIAnalysisPanel() {
     analyzeNode,
     regenerate,
     setActiveTab,
-    setFocusedItemKey
+    setFocusedItemKey,
   } = useAIAnalysisStore();
   const result = analysis?.result;
 
@@ -96,7 +96,7 @@ export function AIAnalysisPanel() {
         void selectNode(itemBinding.nodeIds[0]);
       }
     },
-    [selectNode, setAIHighlights, setFocusedItemKey]
+    [selectNode, setAIHighlights, setFocusedItemKey],
   );
 
   const sectionCards = useMemo(() => {
@@ -108,7 +108,7 @@ export function AIAnalysisPanel() {
         failures: [] as AnalysisCardData[],
         objects: [] as AnalysisCardData[],
         related: [] as AnalysisCardData[],
-        risks: [] as AnalysisCardData[]
+        risks: [] as AnalysisCardData[],
       };
     }
     return {
@@ -117,47 +117,47 @@ export function AIAnalysisPanel() {
         title: `${item.step}. ${item.title}`,
         description: item.description,
         meta: item.businessMeaning,
-        binding: binding(item.nodeIds)
+        binding: binding(item.nodeIds),
       })),
       rules: result.businessRules.map((item, index) => ({
         key: `rule-${index}`,
         title: item.rule,
         description: item.reason,
         meta: `不满足时：${item.failureResult}`,
-        binding: binding(item.nodeIds)
+        binding: binding(item.nodeIds),
       })),
       state: result.stateChanges.map((item, index) => ({
         key: `state-${index}`,
         title: item.businessObject,
         description: `执行前：${item.before}`,
         meta: `执行后：${item.after}`,
-        binding: binding(item.nodeIds)
+        binding: binding(item.nodeIds),
       })),
       failures: result.failureFlows.map((item, index) => ({
         key: `failure-${index}`,
         title: item.scenario,
         description: item.reason,
         meta: `业务影响：${item.businessImpact}`,
-        binding: binding(item.nodeIds)
+        binding: binding(item.nodeIds),
       })),
       objects: [
         ...result.coreBusinessObjects.map((item, index) => ({
           key: `object-${index}`,
           title: item.name,
           description: item.role,
-          binding: binding([])
+          binding: binding([]),
         })),
         ...result.keyBusinessNodes.map((item, index) => ({
           key: `key-${index}`,
           title: item.name,
           description: item.businessImportance,
           meta: item.reason,
-          binding: binding(item.nodeIds)
-        }))
+          binding: binding(item.nodeIds),
+        })),
       ],
       related: result.relatedEndpoints.map((item, index) => {
         const endpoint = endpoints.find(
-          (candidate) => candidate.id === item.endpointId
+          (candidate) => candidate.id === item.endpointId,
         );
         return {
           key: `related-${index}`,
@@ -166,19 +166,22 @@ export function AIAnalysisPanel() {
             : "关联业务接口",
           description: item.relationship,
           meta: item.businessReason,
-          binding: binding([])
+          binding: binding([]),
         };
       }),
       risks: result.businessRisks.map((item, index) => ({
         key: `risk-${index}`,
         title: (
           <>
-            {item.title} <Tag color={item.level === "HIGH" ? "red" : "gold"}>{item.level}</Tag>
+            {item.title}{" "}
+            <Tag color={item.level === "HIGH" ? "red" : "gold"}>
+              {item.level}
+            </Tag>
           </>
         ),
         description: item.description,
-        binding: binding(item.nodeIds)
-      }))
+        binding: binding(item.nodeIds),
+      })),
     };
   }, [endpoints, result]);
 
@@ -189,24 +192,22 @@ export function AIAnalysisPanel() {
           tab,
           key: card.key,
           nodeIds: card.binding.nodeIds,
-          edgeIds: card.binding.edgeIds
-        }))
+          edgeIds: card.binding.edgeIds,
+        })),
       ),
-    [sectionCards]
+    [sectionCards],
   );
 
   useEffect(() => {
     if (!selectedNodeId || !result) {
       return;
     }
-    const current = locatedBindings.find(
-      (item) => item.key === focusedItemKey
-    );
+    const current = locatedBindings.find((item) => item.key === focusedItemKey);
     if (current?.nodeIds.includes(selectedNodeId)) {
       return;
     }
     const located = locatedBindings.find((item) =>
-      item.nodeIds.includes(selectedNodeId)
+      item.nodeIds.includes(selectedNodeId),
     );
     if (!located) {
       return;
@@ -224,7 +225,7 @@ export function AIAnalysisPanel() {
     result,
     selectedNodeId,
     setActiveTab,
-    setFocusedItemKey
+    setFocusedItemKey,
   ]);
 
   useEffect(() => () => clearAIHighlights(), [clearAIHighlights]);
@@ -281,25 +282,25 @@ export function AIAnalysisPanel() {
                 ))}
               </ol>
             </div>
-          )
+          ),
         },
         {
           key: "flow",
           label: "业务流程",
-          children: cardList("flow", "没有可展示的业务步骤")
+          children: cardList("flow", "没有可展示的业务步骤"),
         },
         {
           key: "rules",
           label: "业务规则",
-          children: cardList("rules", "当前源码中未识别到明确业务规则")
+          children: cardList("rules", "当前源码中未识别到明确业务规则"),
         },
         {
           key: "state",
           label: "状态变化",
           children: cardList(
             "state",
-            "该接口主要用于查询，未发现直接改变核心业务数据的证据"
-          )
+            "该接口主要用于查询，未发现直接改变核心业务数据的证据",
+          ),
         },
         {
           key: "data",
@@ -327,22 +328,22 @@ export function AIAnalysisPanel() {
                 empty="返回内容未声明"
               />
             </div>
-          )
+          ),
         },
         {
           key: "failures",
           label: "失败流程",
-          children: cardList("failures", "未发现可证实的失败分支")
+          children: cardList("failures", "未发现可证实的失败分支"),
         },
         {
           key: "objects",
           label: "业务对象",
-          children: cardList("objects", "核心业务对象从当前代码无法确认")
+          children: cardList("objects", "核心业务对象从当前代码无法确认"),
         },
         {
           key: "related",
           label: "关联接口",
-          children: cardList("related", "没有发现同一业务分类下的候选接口")
+          children: cardList("related", "没有发现同一业务分类下的候选接口"),
         },
         {
           key: "risks",
@@ -380,13 +381,13 @@ export function AIAnalysisPanel() {
                           empty="无"
                         />
                       </div>
-                    )
-                  }
+                    ),
+                  },
                 ]}
               />
             </div>
-          )
-        }
+          ),
+        },
       ]
     : [];
 
@@ -400,16 +401,19 @@ export function AIAnalysisPanel() {
         block
         options={[
           {
-            label: selectedIds.length > 1 ? `联合分析 ${selectedIds.length}` : "接口业务",
+            label:
+              selectedIds.length > 1
+                ? `联合分析 ${selectedIds.length}`
+                : "接口业务",
             value: "endpoint",
-            icon: <BranchesOutlined />
+            icon: <BranchesOutlined />,
           },
           {
             label: "节点影响",
             value: "node",
             icon: <ThunderboltOutlined />,
-            disabled: !selectedNodeId
-          }
+            disabled: !selectedNodeId,
+          },
         ]}
         value={analysis?.scopeType === "NODE_IMPACT" ? "node" : "endpoint"}
         onChange={(value) =>

@@ -1,0 +1,164 @@
+> 历史交付记录：接口、配置和验证命令以当前 README 和 architecture.md 为准。
+
+# 阶段二：项目骨架交付说明
+
+## 1. 本阶段目标
+
+建立可以真实安装、启动、迁移、测试和构建的前后端项目骨架，为阶段三的项目导入
+与安全文件扫描提供稳定基础。
+
+## 2. 已完成
+
+### 后端
+
+- Python 3.11+ 项目与 `uv` 依赖管理；
+- FastAPI 应用工厂和 lifespan；
+- `/api/health` 健康检查；
+- Swagger/OpenAPI；
+- SQLAlchemy 2 Engine、Session 和声明式 Base；
+- SQLite 默认配置与 PostgreSQL `psycopg` 驱动；
+- Alembic 配置和初始基线迁移；
+- Pydantic 2 camelCase 响应模型；
+- 统一应用异常、校验异常和 HTTP 异常响应；
+- CORS 和请求 ID；
+- pytest 健康检查与错误响应测试；
+- Ruff 代码检查。
+
+### 前端
+
+- React、TypeScript、Vite；
+- React Router 页面路由；
+- Zustand 项目、接口和图状态骨架；
+- Axios API Client；
+- Ant Design 深色主题；
+- D3.js 依赖；
+- 项目入口页；
+- 接口列表、图画布、节点详情三栏布局；
+- 真实空状态，不使用模拟扫描结果；
+- TypeScript 严格检查和 Vite 生产构建。
+
+## 3. 本阶段未实现
+
+- 项目 CRUD；
+- 本地路径校验；
+- Python 文件扫描；
+- Tree-sitter 解析；
+- FastAPI 路由识别；
+- 调用图数据；
+- D3 节点和边渲染；
+- 节点展开、折叠与多接口合并。
+
+这些内容严格保留给阶段三及之后。
+
+## 4. 新增文件
+
+### 根目录
+
+```text
+.env.example
+.gitignore
+README.md
+```
+
+### 后端
+
+```text
+backend/
+├── pyproject.toml
+├── uv.lock
+├── alembic.ini
+├── README.md
+├── alembic/
+│   ├── env.py
+│   ├── script.py.mako
+│   └── versions/20260805_0001_initial_baseline.py
+├── app/
+│   ├── main.py
+│   ├── api/router.py
+│   ├── api/routes/health.py
+│   ├── core/config.py
+│   ├── core/database.py
+│   ├── core/exceptions.py
+│   ├── models/__init__.py
+│   ├── schemas/common.py
+│   └── schemas/health.py
+└── tests/test_health.py
+```
+
+### 前端
+
+```text
+frontend/
+├── package.json
+├── package-lock.json
+├── index.html
+├── vite.config.ts
+├── tsconfig.json
+├── tsconfig.app.json
+├── tsconfig.node.json
+├── README.md
+└── src/
+    ├── main.tsx
+    ├── router.tsx
+    ├── api/client.ts
+    ├── types/
+    ├── stores/
+    ├── components/
+    │   ├── layout/
+    │   ├── endpoint/
+    │   ├── graph/
+    │   └── detail/
+    ├── pages/
+    └── styles/global.css
+```
+
+## 5. 启动命令
+
+后端：
+
+```powershell
+Set-Location backend
+uv sync
+uv run alembic upgrade head
+uv run uvicorn app.main:app --reload
+```
+
+前端：
+
+```powershell
+Set-Location frontend
+npm.cmd install
+npm.cmd run dev
+```
+
+## 6. 验证结果
+
+本阶段实际执行结果：
+
+| 验证项 | 结果 |
+| --- | --- |
+| Alembic `upgrade head` | 通过 |
+| pytest | 2 个测试通过 |
+| Ruff | 通过 |
+| TypeScript 严格检查 | 通过 |
+| Vite 生产构建 | 通过 |
+
+验证期间使用内存 SQLite 规避执行沙箱对数据库文件的写入限制；应用默认配置仍为
+持久化 SQLite 文件，普通本地环境可直接按启动命令运行。
+
+前端构建会提示主包大于 500 kB。阶段二没有为减少体积而提前拆分业务模块；后续在
+页面和图组件实际增长时使用路由懒加载和 vendor chunk 拆分。
+
+## 7. 下一阶段
+
+阶段三只实现：
+
+1. 项目创建、查询、删除；
+2. 本地项目路径规范化与安全校验；
+3. Python 文件安全遍历；
+4. 忽略目录、文件数量和大小限制；
+5. 扫描任务、进度和错误记录；
+6. 前端项目导入与扫描进度。
+
+阶段三仍不识别 FastAPI 接口；接口识别属于阶段四。
+

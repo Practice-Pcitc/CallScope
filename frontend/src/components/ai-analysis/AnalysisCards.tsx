@@ -27,7 +27,7 @@ export function AnalysisCards({
   items,
   focusedKey,
   emptyText,
-  onFocus
+  onFocus,
 }: {
   items: AnalysisCardData[];
   focusedKey: string | null;
@@ -35,7 +35,9 @@ export function AnalysisCards({
   onFocus: (key: string, binding: FocusBinding) => void;
 }) {
   if (!items.length) {
-    return <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={emptyText} />;
+    return (
+      <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={emptyText} />
+    );
   }
 
   return (
@@ -58,7 +60,9 @@ export function AnalysisCards({
             </Space>
           </div>
           <Paragraph>{item.description}</Paragraph>
-          {item.meta && <div className="ai-analysis-card-meta">{item.meta}</div>}
+          {item.meta && (
+            <div className="ai-analysis-card-meta">{item.meta}</div>
+          )}
         </button>
       ))}
     </div>

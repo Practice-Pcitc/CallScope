@@ -21,9 +21,7 @@ def utc_now() -> datetime:
 class Project(Base):
     __tablename__ = "projects"
 
-    id: Mapped[str] = mapped_column(
-        String(36), primary_key=True, default=lambda: str(uuid4())
-    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
     name: Mapped[str] = mapped_column(String(120), nullable=False, index=True)
     root_path: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
     language: Mapped[str] = mapped_column(String(32), nullable=False, default="python")

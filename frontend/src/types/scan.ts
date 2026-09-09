@@ -1,17 +1,8 @@
 export type ScanTaskStatus =
-  | "PENDING"
-  | "RUNNING"
-  | "SUCCEEDED"
-  | "FAILED"
-  | "CANCELLED";
+  "PENDING" | "RUNNING" | "SUCCEEDED" | "FAILED" | "CANCELLED";
 
 export type ScanStage =
-  | "DISCOVERY"
-  | "VALIDATE"
-  | "PARSE"
-  | "RESOLVE"
-  | "PERSIST"
-  | "COMPLETED";
+  "DISCOVERY" | "VALIDATE" | "PARSE" | "RESOLVE" | "PERSIST" | "COMPLETED";
 
 export interface ScanError {
   path: string;

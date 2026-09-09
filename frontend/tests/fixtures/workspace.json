@@ -1,0 +1,618 @@
+{
+  "project": {
+    "data": {
+      "id": "7e04e326-ab13-4657-b649-72bf3aa3d7df",
+      "name": "FastAPI 示例项目",
+      "rootPath": "D:/samples/fastapi-sample",
+      "language": "python",
+      "framework": "fastapi",
+      "scanStatus": "READY",
+      "activeRevisionId": "9a341a05-8bb1-4121-9fda-f0cf87da140b",
+      "totalFiles": 8,
+      "totalEndpoints": 2,
+      "createdAt": "2026-09-09T13:19:57.902041Z",
+      "updatedAt": "2026-09-09T13:19:57.949790Z"
+    }
+  },
+  "endpoints": {
+    "data": {
+      "items": [
+        {
+          "id": "5c78e31f-98be-4c49-93bb-b1b82217ceb5",
+          "projectId": "7e04e326-ab13-4657-b649-72bf3aa3d7df",
+          "scanRevisionId": "9a341a05-8bb1-4121-9fda-f0cf87da140b",
+          "httpMethod": "POST",
+          "path": "/api/v1/accounts/users/",
+          "functionName": "create_user",
+          "qualifiedName": "app.api.users.create_user",
+          "moduleName": "app.api.users",
+          "filePath": "app/api/users.py",
+          "startLine": 41,
+          "endLine": 51,
+          "summary": null,
+          "tags": ["root", "mounted", "users", "write"],
+          "parameters": [
+            {
+              "name": "payload",
+              "location": "BODY",
+              "type": "CreateUserRequest",
+              "required": true,
+              "default": null
+            },
+            {
+              "name": "verbose",
+              "location": "QUERY",
+              "type": "bool",
+              "required": false,
+              "default": null
+            }
+          ],
+          "responseType": "UserResponse",
+          "dependencies": [
+            {
+              "parameterName": null,
+              "providerExpression": "audit_request",
+              "resolvedQualifiedName": "app.api.users.audit_request",
+              "confidence": "CONFIRMED"
+            }
+          ],
+          "metadata": {},
+          "createdAt": "2026-09-09T13:19:57.941773Z"
+        },
+        {
+          "id": "160ed69a-a388-4815-9ee8-2ff45a542d07",
+          "projectId": "7e04e326-ab13-4657-b649-72bf3aa3d7df",
+          "scanRevisionId": "9a341a05-8bb1-4121-9fda-f0cf87da140b",
+          "httpMethod": "GET",
+          "path": "/api/v1/accounts/users/{user_id}",
+          "functionName": "get_user",
+          "qualifiedName": "app.api.users.get_user",
+          "moduleName": "app.api.users",
+          "filePath": "app/api/users.py",
+          "startLine": 26,
+          "endLine": 38,
+          "summary": "获取用户详情",
+          "tags": ["root", "mounted", "users"],
+          "parameters": [
+            {
+              "name": "user_id",
+              "location": "PATH",
+              "type": "int",
+              "required": true,
+              "default": null
+            },
+            {
+              "name": "service",
+              "location": "DEPENDENCY",
+              "type": "UserService",
+              "required": false,
+              "default": null
+            },
+            {
+              "name": "keyword",
+              "location": "QUERY",
+              "type": "str | None",
+              "required": false,
+              "default": null
+            }
+          ],
+          "responseType": "UserResponse",
+          "dependencies": [
+            {
+              "parameterName": "service",
+              "providerExpression": "get_user_service",
+              "resolvedQualifiedName": "app.api.users.get_user_service",
+              "confidence": "CONFIRMED"
+            }
+          ],
+          "metadata": {},
+          "createdAt": "2026-09-09T13:19:57.941773Z"
+        }
+      ],
+      "modules": ["app.api.users"],
+      "pagination": {
+        "page": 1,
+        "pageSize": 100,
+        "total": 2
+      }
+    }
+  },
+  "graph": {
+    "data": {
+      "projectId": "7e04e326-ab13-4657-b649-72bf3aa3d7df",
+      "scanRevisionId": "9a341a05-8bb1-4121-9fda-f0cf87da140b",
+      "roots": ["c649ea60-451a-4f0c-9755-ded7cea48bbd"],
+      "nodes": [
+        {
+          "id": "c649ea60-451a-4f0c-9755-ded7cea48bbd",
+          "type": "API",
+          "name": "POST /api/v1/accounts/users/",
+          "qualifiedName": "app.api.users.create_user",
+          "moduleName": "app.api.users",
+          "filePath": "app/api/users.py",
+          "startLine": 41,
+          "endLine": 51,
+          "signature": null,
+          "loaded": false,
+          "expanded": false,
+          "hasChildren": true,
+          "childCount": 1,
+          "depth": 0,
+          "entryEndpointIds": ["5c78e31f-98be-4c49-93bb-b1b82217ceb5"],
+          "shared": false,
+          "metadata": {
+            "httpMethod": "POST",
+            "path": "/api/v1/accounts/users/",
+            "tags": ["root", "mounted", "users", "write"]
+          }
+        },
+        {
+          "id": "43459884-2ad4-47b9-bb1d-dd8501368846",
+          "type": "ROUTE_FUNCTION",
+          "name": "create_user",
+          "qualifiedName": "app.api.users.create_user",
+          "moduleName": "app.api.users",
+          "filePath": "app/api/users.py",
+          "startLine": 46,
+          "endLine": 51,
+          "signature": "create_user(\r\n    payload: CreateUserRequest,\r\n    verbose: bool = Query(False),\r\n) -> UserResponse",
+          "loaded": false,
+          "expanded": false,
+          "hasChildren": true,
+          "childCount": 5,
+          "depth": 1,
+          "entryEndpointIds": ["5c78e31f-98be-4c49-93bb-b1b82217ceb5"],
+          "shared": false,
+          "metadata": {
+            "className": null
+          }
+        }
+      ],
+      "edges": [
+        {
+          "id": "2020b710-2dd8-4e46-96f9-cc14b693c566",
+          "source": "c649ea60-451a-4f0c-9755-ded7cea48bbd",
+          "target": "43459884-2ad4-47b9-bb1d-dd8501368846",
+          "relationType": "ROUTES_TO",
+          "confidence": "CONFIRMED",
+          "filePath": "app/api/users.py",
+          "lineNumber": 41,
+          "columnNumber": 1,
+          "evidence": "@route POST /api/v1/accounts/users/",
+          "entryEndpointIds": ["5c78e31f-98be-4c49-93bb-b1b82217ceb5"],
+          "metadata": {}
+        }
+      ],
+      "meta": {
+        "nodeCount": 2,
+        "edgeCount": 1,
+        "truncated": false
+      }
+    }
+  },
+  "analysis": {
+    "data": {
+      "analysisId": "f68cd3d8-8126-4a36-8a03-99fbe5fedd8d",
+      "projectId": "7e04e326-ab13-4657-b649-72bf3aa3d7df",
+      "scanRevisionId": "9a341a05-8bb1-4121-9fda-f0cf87da140b",
+      "scopeType": "SINGLE_ENDPOINT",
+      "status": "COMPLETED",
+      "provider": "grounded-local",
+      "model": "grounded-local-v1",
+      "cached": false,
+      "stale": false,
+      "result": {
+        "businessSummary": "该接口用于创建用户。系统完成必要检查和数据处理后返回业务结果；具体使用角色和页面入口从当前代码无法确认。",
+        "businessScenario": "典型使用者和界面入口从当前代码无法确认。当用户或其他系统需要执行上述业务能力时会调用该接口；调用前置条件以当前源码中识别出的业务规则为准。",
+        "businessFlow": [
+          {
+            "step": 1,
+            "title": "接收业务请求",
+            "description": "该接口用于创建用户。系统完成必要检查和数据处理后返回业务结果；具体使用角色和页面入口从当前代码无法确认。",
+            "businessMeaning": "把用户或其他系统的业务意图交给系统处理。",
+            "nodeIds": ["c649ea60-451a-4f0c-9755-ded7cea48bbd"]
+          },
+          {
+            "step": 2,
+            "title": "检查业务条件",
+            "description": "系统按照源码中识别出的 1 项条件，确认本次操作是否允许继续。",
+            "businessMeaning": "避免不满足条件的请求继续改变业务数据或产生错误结果。",
+            "nodeIds": ["700f3aa8-a1bd-465e-82cd-0f442fdf1dc3"]
+          },
+          {
+            "step": 3,
+            "title": "读取业务信息",
+            "description": "系统读取完成本次业务判断和结果组装所需的数据。",
+            "businessMeaning": "使用现有业务数据确认当前情况。",
+            "nodeIds": [
+              "5f498b20-969b-4d71-bbad-c774cbe26328",
+              "61a47b43-1812-4674-9597-be5a5ce4cbda",
+              "700f3aa8-a1bd-465e-82cd-0f442fdf1dc3",
+              "bedb9e6a-216e-4c5a-94fc-26fcae3f55c6"
+            ]
+          },
+          {
+            "step": 4,
+            "title": "新增业务数据",
+            "description": "校验通过后，系统新增与本次操作相关的业务数据。",
+            "businessMeaning": "这是本接口对业务状态产生实际影响的核心步骤。",
+            "nodeIds": [
+              "ed5acfdd-c33d-4aee-93a1-5b4b82fb1c20",
+              "647d2b66-c851-4453-86d0-792ef690c314"
+            ]
+          },
+          {
+            "step": 5,
+            "title": "完成外部协作",
+            "description": "系统还需要读取缓存、数据资源或调用外部能力；其具体业务含义以当前证据能够确认的范围为限。",
+            "businessMeaning": "借助当前系统之外的资源完成业务处理。",
+            "nodeIds": [
+              "5f498b20-969b-4d71-bbad-c774cbe26328",
+              "ed5acfdd-c33d-4aee-93a1-5b4b82fb1c20",
+              "a2d3f833-ccda-410c-adf2-e7acf4630477",
+              "53a5c87e-11b8-48aa-a2c9-748ad37af993",
+              "61a47b43-1812-4674-9597-be5a5ce4cbda",
+              "e22b1515-e5d8-42c3-a9a8-782d5ff57163"
+            ]
+          },
+          {
+            "step": 6,
+            "title": "返回业务结果",
+            "description": "系统向调用方返回本次查询或处理结果，调用方可以据此展示结果或继续后续业务。",
+            "businessMeaning": "调用方据此展示结果或继续后续业务。",
+            "nodeIds": ["c649ea60-451a-4f0c-9755-ded7cea48bbd"]
+          }
+        ],
+        "businessRules": [
+          {
+            "rule": "本次操作必须满足源码中定义的业务判断条件。",
+            "reason": "该条件用于决定业务流程是否可以继续。",
+            "failureResult": "条件不满足时，流程会进入其他分支或提前结束；具体业务原因从当前代码无法确认。",
+            "nodeIds": ["700f3aa8-a1bd-465e-82cd-0f442fdf1dc3"]
+          }
+        ],
+        "stateChanges": [
+          {
+            "businessObject": "与本次操作相关的业务数据",
+            "before": "系统中尚无本次新增记录",
+            "after": "新增一份业务记录",
+            "nodeIds": ["ed5acfdd-c33d-4aee-93a1-5b4b82fb1c20"]
+          },
+          {
+            "businessObject": "与本次操作相关的业务数据",
+            "before": "系统中尚无本次新增记录",
+            "after": "新增一份业务记录",
+            "nodeIds": ["647d2b66-c851-4453-86d0-792ef690c314"]
+          }
+        ],
+        "businessDataFlow": {
+          "inputs": ["调用方提交的业务信息"],
+          "reads": ["与本次操作相关的业务数据"],
+          "changes": ["新增与本次操作相关的业务数据"],
+          "outputs": ["业务数据创建结果"]
+        },
+        "normalFlow": [
+          "该接口用于创建用户。系统完成必要检查和数据处理后返回业务结果；具体使用角色和页面入口从当前代码无法确认。",
+          "系统按照源码中识别出的 1 项条件，确认本次操作是否允许继续。",
+          "系统读取完成本次业务判断和结果组装所需的数据。",
+          "校验通过后，系统新增与本次操作相关的业务数据。",
+          "系统还需要读取缓存、数据资源或调用外部能力；其具体业务含义以当前证据能够确认的范围为限。",
+          "系统向调用方返回本次查询或处理结果，调用方可以据此展示结果或继续后续业务。"
+        ],
+        "failureFlows": [
+          {
+            "scenario": "业务条件未满足 1",
+            "reason": "本次操作必须满足源码中定义的业务判断条件。",
+            "businessImpact": "条件不满足时，流程会进入其他分支或提前结束；具体业务原因从当前代码无法确认。",
+            "nodeIds": ["700f3aa8-a1bd-465e-82cd-0f442fdf1dc3"]
+          }
+        ],
+        "coreBusinessObjects": [
+          {
+            "name": "root",
+            "role": "本接口读取、判断或改变的核心业务对象；更具体含义从当前代码无法确认。"
+          },
+          {
+            "name": "mounted",
+            "role": "本接口读取、判断或改变的核心业务对象；更具体含义从当前代码无法确认。"
+          },
+          {
+            "name": "users",
+            "role": "本接口读取、判断或改变的核心业务对象；更具体含义从当前代码无法确认。"
+          },
+          {
+            "name": "write",
+            "role": "本接口读取、判断或改变的核心业务对象；更具体含义从当前代码无法确认。"
+          },
+          {
+            "name": "当前业务对象（具体名称无法确认）",
+            "role": "本接口读取、判断或改变的核心业务对象；更具体含义从当前代码无法确认。"
+          }
+        ],
+        "keyBusinessNodes": [
+          {
+            "name": "业务条件检查",
+            "businessImportance": "决定本次业务是否能够继续。",
+            "reason": "本次操作必须满足源码中定义的业务判断条件。",
+            "nodeIds": ["700f3aa8-a1bd-465e-82cd-0f442fdf1dc3"]
+          },
+          {
+            "name": "业务数据变更",
+            "businessImportance": "直接改变系统中的业务结果。",
+            "reason": "静态证据显示存在 WRITE 类型的数据操作。",
+            "nodeIds": ["ed5acfdd-c33d-4aee-93a1-5b4b82fb1c20"]
+          },
+          {
+            "name": "业务数据变更",
+            "businessImportance": "直接改变系统中的业务结果。",
+            "reason": "静态证据显示存在 WRITE 类型的数据操作。",
+            "nodeIds": ["647d2b66-c851-4453-86d0-792ef690c314"]
+          }
+        ],
+        "processPosition": {
+          "position": "UNKNOWN",
+          "description": "从当前静态调用链无法可靠确认该接口处于整个产品流程的开始、中间还是结束位置。"
+        },
+        "relatedEndpoints": [
+          {
+            "endpointId": "160ed69a-a388-4815-9ee8-2ff45a542d07",
+            "relationship": "候选业务关联",
+            "businessReason": "该接口与当前接口属于相同业务分类；当前静态证据不足以确认固定调用顺序。"
+          }
+        ],
+        "businessRisks": [
+          {
+            "title": "业务数据变更与外部协作一致性",
+            "description": "从当前链路来看，系统既会改变业务数据，也会调用外部能力。如果外部调用失败，可能出现两边结果不一致，需要关注事务、重试或补偿机制；当前代码证据无法确认这些机制是否完整。",
+            "level": "MEDIUM",
+            "nodeIds": [
+              "ed5acfdd-c33d-4aee-93a1-5b4b82fb1c20",
+              "647d2b66-c851-4453-86d0-792ef690c314",
+              "61a47b43-1812-4674-9597-be5a5ce4cbda"
+            ]
+          }
+        ],
+        "technicalReference": {
+          "entry": "POST /api/v1/accounts/users/",
+          "coreMethods": [
+            "app.api.users.create_user",
+            "app.services.user_service.UserService",
+            "app.services.user_service.UserService.get_user",
+            "app.services.user_service.UserService.create_user"
+          ],
+          "dataAccess": [
+            "db.get",
+            "db.add",
+            "db.commit",
+            "users",
+            "https://profiles.example.test/users",
+            "app.repositories.user_repository.UserRepository.find_by_id",
+            "app.repositories.user_repository.UserRepository.create",
+            "app.services.user_service.UserService.get_user"
+          ],
+          "sourceFiles": [
+            "app/api/users.py:41-51",
+            "app/repositories/user_repository.py:6-10",
+            "app/repositories/user_repository.py:19-19",
+            "app/repositories/user_repository.py:24-24",
+            "app/repositories/user_repository.py:25-25",
+            "app/repositories/user_repository.py:18-18",
+            "app/api/users.py:9-11",
+            "app/api/users.py:14-15",
+            "app/repositories/user_repository.py:15-15",
+            "app/repositories/user_repository.py:14-19",
+            "app/repositories/user_repository.py:21-26",
+            "app/api/users.py:46-51",
+            "app/services/user_service.py:6-11",
+            "app/services/user_service.py:7-8",
+            "app/services/user_service.py:10-11"
+          ]
+        }
+      },
+      "errorMessage": null,
+      "tokenUsage": {
+        "input_tokens": 9149,
+        "output_tokens": 1750,
+        "latency_ms": 0,
+        "request_id": null,
+        "mode": "deterministic-evidence"
+      },
+      "invalidReferenceCount": 0,
+      "createdAt": "2026-09-09T13:19:58.019479Z",
+      "updatedAt": "2026-09-09T13:19:58.024478Z",
+      "completedAt": "2026-09-09T13:19:58.023480Z"
+    }
+  },
+  "scan": {
+    "data": {
+      "id": "336c9e01-8fc6-476f-8c94-0c4aaea5a233",
+      "projectId": "7e04e326-ab13-4657-b649-72bf3aa3d7df",
+      "revisionId": "9a341a05-8bb1-4121-9fda-f0cf87da140b",
+      "status": "SUCCEEDED",
+      "stage": "COMPLETED",
+      "progress": 100,
+      "currentFile": null,
+      "discoveredFiles": 8,
+      "processedFiles": 8,
+      "skippedFiles": 0,
+      "failedFiles": 0,
+      "errorMessage": null,
+      "errors": [],
+      "startedAt": "2026-09-09T13:19:57.921096Z",
+      "finishedAt": "2026-09-09T13:19:57.948774Z",
+      "createdAt": "2026-09-09T13:19:57.915813Z"
+    }
+  },
+  "nodes": {
+    "c649ea60-451a-4f0c-9755-ded7cea48bbd": {
+      "detail": {
+        "data": {
+          "id": "c649ea60-451a-4f0c-9755-ded7cea48bbd",
+          "type": "API",
+          "name": "POST /api/v1/accounts/users/",
+          "qualifiedName": "app.api.users.create_user",
+          "moduleName": "app.api.users",
+          "filePath": "app/api/users.py",
+          "startLine": 41,
+          "endLine": 51,
+          "signature": null,
+          "loaded": false,
+          "expanded": false,
+          "hasChildren": true,
+          "childCount": 1,
+          "depth": 0,
+          "entryEndpointIds": [],
+          "shared": false,
+          "metadata": {
+            "httpMethod": "POST",
+            "path": "/api/v1/accounts/users/",
+            "tags": ["root", "mounted", "users", "write"]
+          },
+          "sourceExcerpt": null,
+          "upstream": [],
+          "downstream": [
+            {
+              "id": "2020b710-2dd8-4e46-96f9-cc14b693c566",
+              "source": "c649ea60-451a-4f0c-9755-ded7cea48bbd",
+              "target": "43459884-2ad4-47b9-bb1d-dd8501368846",
+              "relationType": "ROUTES_TO",
+              "confidence": "CONFIRMED",
+              "filePath": "app/api/users.py",
+              "lineNumber": 41,
+              "columnNumber": 1,
+              "evidence": "@route POST /api/v1/accounts/users/",
+              "entryEndpointIds": [],
+              "metadata": {}
+            }
+          ]
+        }
+      },
+      "source": {
+        "data": {
+          "nodeId": "c649ea60-451a-4f0c-9755-ded7cea48bbd",
+          "filePath": "app/api/users.py",
+          "startLine": 41,
+          "endLine": 51,
+          "source": "@router.post(\n    \"/\",\n    tags=[\"write\"],\n    dependencies=[Depends(audit_request)],\n)\nasync def create_user(\n    payload: CreateUserRequest,\n    verbose: bool = Query(False),\n) -> UserResponse:\n    user = UserService().create_user(payload.name)\n    return UserResponse(id=user.id, name=user.name)"
+        }
+      }
+    },
+    "43459884-2ad4-47b9-bb1d-dd8501368846": {
+      "detail": {
+        "data": {
+          "id": "43459884-2ad4-47b9-bb1d-dd8501368846",
+          "type": "ROUTE_FUNCTION",
+          "name": "create_user",
+          "qualifiedName": "app.api.users.create_user",
+          "moduleName": "app.api.users",
+          "filePath": "app/api/users.py",
+          "startLine": 46,
+          "endLine": 51,
+          "signature": "create_user(\r\n    payload: CreateUserRequest,\r\n    verbose: bool = Query(False),\r\n) -> UserResponse",
+          "loaded": false,
+          "expanded": false,
+          "hasChildren": true,
+          "childCount": 5,
+          "depth": 0,
+          "entryEndpointIds": [],
+          "shared": false,
+          "metadata": {
+            "className": null
+          },
+          "sourceExcerpt": "async def create_user(\r\n    payload: CreateUserRequest,\r\n    verbose: bool = Query(False),\r\n) -> UserResponse:\r\n    user = UserService().create_user(payload.name)\r\n    return UserResponse(id=user.id, name=user.name)",
+          "upstream": [
+            {
+              "id": "2020b710-2dd8-4e46-96f9-cc14b693c566",
+              "source": "c649ea60-451a-4f0c-9755-ded7cea48bbd",
+              "target": "43459884-2ad4-47b9-bb1d-dd8501368846",
+              "relationType": "ROUTES_TO",
+              "confidence": "CONFIRMED",
+              "filePath": "app/api/users.py",
+              "lineNumber": 41,
+              "columnNumber": 1,
+              "evidence": "@route POST /api/v1/accounts/users/",
+              "entryEndpointIds": [],
+              "metadata": {}
+            }
+          ],
+          "downstream": [
+            {
+              "id": "5c73c6fb-2a78-4664-8101-04ef486022fb",
+              "source": "43459884-2ad4-47b9-bb1d-dd8501368846",
+              "target": "33af1216-8ae4-495b-9a4e-d1fc49e4ec3b",
+              "relationType": "CALLS",
+              "confidence": "HIGH",
+              "filePath": "app/api/users.py",
+              "lineNumber": 50,
+              "columnNumber": 12,
+              "evidence": "UserService().create_user(payload.name)",
+              "entryEndpointIds": [],
+              "metadata": {}
+            },
+            {
+              "id": "e26dfb87-28c7-4617-b3ba-c5820d44aa22",
+              "source": "43459884-2ad4-47b9-bb1d-dd8501368846",
+              "target": "57743967-f037-4c1b-8701-407ac9ab9d4a",
+              "relationType": "CALLS",
+              "confidence": "CONFIRMED",
+              "filePath": "app/api/users.py",
+              "lineNumber": 50,
+              "columnNumber": 12,
+              "evidence": "UserService()",
+              "entryEndpointIds": [],
+              "metadata": {}
+            },
+            {
+              "id": "6ec663cb-71f6-48cb-9f5e-27b412969e31",
+              "source": "43459884-2ad4-47b9-bb1d-dd8501368846",
+              "target": "6aa9d049-b291-40a9-bda4-36dabbc0d0bf",
+              "relationType": "VALIDATES",
+              "confidence": "CONFIRMED",
+              "filePath": "app/api/users.py",
+              "lineNumber": 47,
+              "columnNumber": 5,
+              "evidence": "payload: CreateUserRequest",
+              "entryEndpointIds": [],
+              "metadata": {}
+            },
+            {
+              "id": "7e3a3154-b43a-46d6-843d-a40a57ce6146",
+              "source": "43459884-2ad4-47b9-bb1d-dd8501368846",
+              "target": "991c514a-6133-46b2-b8cd-0068b770d773",
+              "relationType": "RETURNS",
+              "confidence": "CONFIRMED",
+              "filePath": "app/api/users.py",
+              "lineNumber": 46,
+              "columnNumber": 1,
+              "evidence": "-> UserResponse",
+              "entryEndpointIds": [],
+              "metadata": {}
+            },
+            {
+              "id": "82b5a35a-c05c-4067-becc-a86613561c8d",
+              "source": "43459884-2ad4-47b9-bb1d-dd8501368846",
+              "target": "991c514a-6133-46b2-b8cd-0068b770d773",
+              "relationType": "CALLS",
+              "confidence": "CONFIRMED",
+              "filePath": "app/api/users.py",
+              "lineNumber": 51,
+              "columnNumber": 12,
+              "evidence": "UserResponse(id=user.id, name=user.name)",
+              "entryEndpointIds": [],
+              "metadata": {}
+            }
+          ]
+        }
+      },
+      "source": {
+        "data": {
+          "nodeId": "43459884-2ad4-47b9-bb1d-dd8501368846",
+          "filePath": "app/api/users.py",
+          "startLine": 46,
+          "endLine": 51,
+          "source": "async def create_user(\n    payload: CreateUserRequest,\n    verbose: bool = Query(False),\n) -> UserResponse:\n    user = UserService().create_user(payload.name)\n    return UserResponse(id=user.id, name=user.name)"
+        }
+      }
+    }
+  }
+}

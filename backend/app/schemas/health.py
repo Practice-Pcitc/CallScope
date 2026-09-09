@@ -12,4 +12,3 @@ class HealthData(ApiModel):
 
 class HealthResponse(ApiModel):
     data: HealthData
-

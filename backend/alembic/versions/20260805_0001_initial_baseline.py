@@ -19,4 +19,3 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     """基线迁移没有数据库对象需要删除。"""
-

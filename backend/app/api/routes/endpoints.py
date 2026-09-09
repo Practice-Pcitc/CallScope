@@ -25,9 +25,7 @@ def list_endpoints(
     project_id: str,
     session: Annotated[Session, Depends(get_db)],
     search: Annotated[str | None, Query(max_length=255)] = None,
-    http_method: Annotated[
-        str | None, Query(alias="httpMethod", max_length=12)
-    ] = None,
+    http_method: Annotated[str | None, Query(alias="httpMethod", max_length=12)] = None,
     module: Annotated[str | None, Query(max_length=512)] = None,
     tag: Annotated[str | None, Query(max_length=255)] = None,
     page: Annotated[int, Query(ge=1)] = 1,
@@ -66,4 +64,3 @@ def get_endpoint(
         endpoint_id=endpoint_id,
     )
     return EndpointResponse(data=EndpointData.from_entity(endpoint))
-

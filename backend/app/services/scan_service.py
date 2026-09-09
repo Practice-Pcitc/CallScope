@@ -3,7 +3,6 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from pathlib import Path
 
-from sqlalchemy import update
 from sqlalchemy.orm import Session
 
 from app.analyzers.call_graph_analyzer import CallGraphAnalyzer
@@ -14,11 +13,11 @@ from app.core.config import settings
 from app.core.database import SessionLocal
 from app.core.enums import ProjectScanStatus, ScanStage, ScanTaskStatus
 from app.core.exceptions import AppException
+from app.core.logging import logger
 from app.models.api_endpoint import ApiEndpoint
 from app.models.code_node import CodeNode
 from app.models.code_relation import CodeRelation
 from app.models.endpoint_node import EndpointNode
-from app.models.project import Project
 from app.models.scan_task import ScanTask
 from app.repositories.ai_analysis_repository import AIAnalysisRepository
 from app.repositories.endpoint_repository import EndpointRepository
@@ -106,12 +105,7 @@ def execute_scan_task(task_id: str) -> None:
             task.current_file = current_file
             task.progress = min(
                 60,
-                5
-                + int(
-                    visited_entries
-                    / max(settings.max_directory_entries, 1)
-                    * 55
-                ),
+                5 + int(visited_entries / max(settings.max_directory_entries, 1) * 55),
             )
             session.commit()
 
@@ -120,12 +114,8 @@ def execute_scan_task(task_id: str) -> None:
                 Path(project.root_path),
                 on_progress=update_discovery_progress,
             )
-            python_files = [
-                path for path in result.files if Path(path).suffix.casefold() == ".py"
-            ]
-            java_files = [
-                path for path in result.files if Path(path).suffix.casefold() == ".java"
-            ]
+            python_files = [path for path in result.files if Path(path).suffix.casefold() == ".py"]
+            java_files = [path for path in result.files if Path(path).suffix.casefold() == ".java"]
             if java_files and len(java_files) >= len(python_files):
                 source_files = java_files
                 project.language = "java"
@@ -156,9 +146,7 @@ def execute_scan_task(task_id: str) -> None:
             ) -> None:
                 task.current_file = current_file
                 task.processed_files = current_index
-                task.progress = 62 + int(
-                    current_index / max(total_files, 1) * 26
-                )
+                task.progress = 62 + int(current_index / max(total_files, 1) * 26)
                 if current_index % 20 == 0 or current_index == total_files:
                     session.commit()
 
@@ -254,11 +242,8 @@ def execute_scan_task(task_id: str) -> None:
                         endpoint_id=endpoint_by_identity[identity].id,
                         node_id=node_id_by_key[api_key],
                     )
-                    for identity, api_key in (
-                        graph_analysis.endpoint_api_keys.items()
-                    )
-                    if identity in endpoint_by_identity
-                    and api_key in node_id_by_key
+                    for identity, api_key in (graph_analysis.endpoint_api_keys.items())
+                    if identity in endpoint_by_identity and api_key in node_id_by_key
                 ]
             )
             project.total_files = len(source_files)
@@ -285,11 +270,12 @@ def execute_scan_task(task_id: str) -> None:
                 message=str(exc),
             )
         except Exception as exc:
+            logger.error("scan_failed", extra={"run_id": task.id, "error_type": type(exc).__name__})
             _fail_task(
                 session,
                 task_id=task.id,
                 project_id=project.id,
-                message=f"扫描过程中发生错误：{exc}",
+                message="扫描失败，请检查项目可读性并凭扫描编号排查",
             )
 
 
@@ -301,8 +287,8 @@ def _fail_task(
     message: str,
 ) -> None:
     session.rollback()
-    task = session.get(ScanTask, task_id)
-    project = session.get(Project, project_id)
+    task = ScanRepository(session).get(task_id)
+    project = ProjectRepository(session).get(project_id)
     if not task or not project:
         return
     task.status = ScanTaskStatus.FAILED.value
@@ -319,9 +305,5 @@ def recover_interrupted_scans() -> None:
         scans = ScanRepository(session)
         count = scans.mark_interrupted_as_failed(message="服务重启，扫描任务已中断")
         if count:
-            session.execute(
-                update(Project)
-                .where(Project.scan_status == ProjectScanStatus.SCANNING.value)
-                .values(scan_status=ProjectScanStatus.FAILED.value)
-            )
+            ProjectRepository(session).mark_scanning_failed()
             session.commit()

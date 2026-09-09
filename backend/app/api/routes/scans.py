@@ -11,7 +11,7 @@ router = APIRouter(prefix="/projects")
 
 
 @router.post(
-    "/{project_id}/scan",
+    "/{project_id}/scans",
     response_model=ScanTaskResponse,
     status_code=status.HTTP_202_ACCEPTED,
     summary="启动项目文件扫描",
@@ -27,7 +27,7 @@ def start_scan(
 
 
 @router.get(
-    "/{project_id}/scan-status",
+    "/{project_id}/scans/latest",
     response_model=ScanTaskResponse,
     summary="查询最新扫描状态",
 )
@@ -37,4 +37,3 @@ def get_scan_status(
 ) -> ScanTaskResponse:
     task = ScanService(session).latest(project_id)
     return ScanTaskResponse(data=ScanTaskData.from_entity(task))
-

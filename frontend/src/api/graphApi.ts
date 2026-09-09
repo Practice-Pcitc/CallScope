@@ -3,7 +3,7 @@ import type {
   GraphData,
   NodeDetail,
   RelationDetail,
-  SourceData
+  SourceData,
 } from "../types/graph";
 
 interface DataResponse<T> {
@@ -15,11 +15,11 @@ export const graphApi = {
     projectId: string,
     endpointId: string,
     includeLowerConfidence = false,
-    depth = 5
+    depth = 5,
   ): Promise<GraphData> {
     const response = await apiClient.get<DataResponse<GraphData>>(
-      `/projects/${projectId}/endpoints/${endpointId}/graph`,
-      { params: { includeLowerConfidence, depth } }
+      `/projects/${projectId}/endpoints/${endpointId}/graphs`,
+      { params: { includeLowerConfidence, depth } },
     );
     return response.data.data;
   },
@@ -28,11 +28,11 @@ export const graphApi = {
     projectId: string,
     endpointIds: string[],
     includeLowerConfidence = false,
-    depth = 5
+    depth = 5,
   ): Promise<GraphData> {
     const response = await apiClient.post<DataResponse<GraphData>>(
-      `/projects/${projectId}/graph/combined`,
-      { endpointIds, includeLowerConfidence, depth }
+      `/projects/${projectId}/graphs/combined`,
+      { endpointIds, includeLowerConfidence, depth },
     );
     return response.data.data;
   },
@@ -40,36 +40,36 @@ export const graphApi = {
   async children(
     projectId: string,
     nodeId: string,
-    includeLowerConfidence = false
+    includeLowerConfidence = false,
   ): Promise<GraphData> {
     const response = await apiClient.get<DataResponse<GraphData>>(
       `/projects/${projectId}/nodes/${nodeId}/children`,
-      { params: { includeLowerConfidence } }
+      { params: { includeLowerConfidence } },
     );
     return response.data.data;
   },
 
   async node(projectId: string, nodeId: string): Promise<NodeDetail> {
     const response = await apiClient.get<DataResponse<NodeDetail>>(
-      `/projects/${projectId}/nodes/${nodeId}`
+      `/projects/${projectId}/nodes/${nodeId}`,
     );
     return response.data.data;
   },
 
   async source(projectId: string, nodeId: string): Promise<SourceData> {
     const response = await apiClient.get<DataResponse<SourceData>>(
-      `/projects/${projectId}/nodes/${nodeId}/source`
+      `/projects/${projectId}/nodes/${nodeId}/source`,
     );
     return response.data.data;
   },
 
   async relation(
     projectId: string,
-    relationId: string
+    relationId: string,
   ): Promise<RelationDetail> {
     const response = await apiClient.get<DataResponse<RelationDetail>>(
-      `/projects/${projectId}/relations/${relationId}`
+      `/projects/${projectId}/relations/${relationId}`,
     );
     return response.data.data;
-  }
+  },
 };

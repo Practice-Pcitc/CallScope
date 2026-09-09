@@ -1,11 +1,7 @@
 import { create } from "zustand";
 
 import { endpointApi } from "../api/endpointApi";
-import type {
-  Endpoint,
-  EndpointFilters,
-  HttpMethod
-} from "../types/endpoint";
+import type { Endpoint, EndpointFilters, HttpMethod } from "../types/endpoint";
 
 interface EndpointState {
   endpoints: Endpoint[];
@@ -35,9 +31,9 @@ const initialState = {
   filters: {
     search: "",
     httpMethod: "ALL" as const,
-    module: ""
+    module: "",
   },
-  loading: false
+  loading: false,
 };
 
 export const useEndpointStore = create<EndpointState>((set, get) => ({
@@ -57,7 +53,7 @@ export const useEndpointStore = create<EndpointState>((set, get) => ({
           state.activeEndpointId && visibleIds.has(state.activeEndpointId)
             ? state.activeEndpointId
             : null,
-        loading: false
+        loading: false,
       }));
     } catch (error) {
       set({ loading: false });
@@ -77,7 +73,7 @@ export const useEndpointStore = create<EndpointState>((set, get) => ({
       selectedIds: state.selectedIds.includes(endpointId)
         ? state.selectedIds.filter((id) => id !== endpointId)
         : [...state.selectedIds, endpointId],
-      activeEndpointId: endpointId
+      activeEndpointId: endpointId,
     })),
 
   selectEndpoint: (endpointId) =>
@@ -85,17 +81,16 @@ export const useEndpointStore = create<EndpointState>((set, get) => ({
       activeEndpointId: endpointId,
       selectedIds: state.selectedIds.includes(endpointId)
         ? state.selectedIds
-        : [...state.selectedIds, endpointId]
+        : [...state.selectedIds, endpointId],
     })),
 
   selectAll: () =>
     set((state) => ({
       selectedIds: state.endpoints.map((endpoint) => endpoint.id),
       activeEndpointId:
-        state.activeEndpointId ?? state.endpoints[0]?.id ?? null
+        state.activeEndpointId ?? state.endpoints[0]?.id ?? null,
     })),
 
   clearSelection: () => set({ selectedIds: [], activeEndpointId: null }),
-  reset: () => set(initialState)
+  reset: () => set(initialState),
 }));
-

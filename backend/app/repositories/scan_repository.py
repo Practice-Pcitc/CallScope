@@ -31,9 +31,7 @@ class ScanRepository:
             select(ScanTask)
             .where(
                 ScanTask.project_id == project_id,
-                ScanTask.status.in_(
-                    [ScanTaskStatus.PENDING.value, ScanTaskStatus.RUNNING.value]
-                ),
+                ScanTask.status.in_([ScanTaskStatus.PENDING.value, ScanTaskStatus.RUNNING.value]),
             )
             .order_by(ScanTask.created_at.desc())
             .limit(1)
@@ -44,9 +42,7 @@ class ScanRepository:
         statement = (
             update(ScanTask)
             .where(
-                ScanTask.status.in_(
-                    [ScanTaskStatus.PENDING.value, ScanTaskStatus.RUNNING.value]
-                )
+                ScanTask.status.in_([ScanTaskStatus.PENDING.value, ScanTaskStatus.RUNNING.value])
             )
             .values(
                 status=ScanTaskStatus.FAILED.value,
@@ -55,4 +51,3 @@ class ScanRepository:
         )
         result = self.session.execute(statement)
         return result.rowcount or 0
-

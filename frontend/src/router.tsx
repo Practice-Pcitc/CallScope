@@ -1,4 +1,8 @@
-import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
+import {
+  createBrowserRouter,
+  Navigate,
+  RouterProvider,
+} from "react-router-dom";
 
 import { AppShell } from "./components/layout/AppShell";
 import { GraphPage } from "./pages/GraphPage";
@@ -10,12 +14,11 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="/projects" replace /> },
       { path: "/projects", element: <ProjectPage /> },
-      { path: "/projects/:projectId/graph", element: <GraphPage /> }
-    ]
-  }
+      { path: "/projects/:projectId/graph", element: <GraphPage /> },
+    ],
+  },
 ]);
 
 export function AppRouter() {
   return <RouterProvider router={router} />;
 }
-

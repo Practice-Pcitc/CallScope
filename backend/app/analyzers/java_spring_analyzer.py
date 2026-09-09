@@ -163,7 +163,7 @@ class JavaSpringProjectAnalyzer:
                     AnalyzerIssue(
                         path=relative_path,
                         code="JAVA_PARSE_FAILED",
-                        message=str(exc),
+                        message=f"文件处理失败（{type(exc).__name__}），请检查文件格式和读取权限",
                     )
                 )
 
@@ -184,9 +184,7 @@ class JavaSpringProjectAnalyzer:
         package_match = PACKAGE_PATTERN.search(comments_removed)
         package_name = package_match.group(1) if package_match else ""
         class_name = class_match.group("name")
-        qualified_name = (
-            f"{package_name}.{class_name}" if package_name else class_name
-        )
+        qualified_name = f"{package_name}.{class_name}" if package_name else class_name
         imports = {
             imported.rsplit(".", 1)[-1]: imported
             for imported in IMPORT_PATTERN.findall(comments_removed)
@@ -227,9 +225,7 @@ class JavaSpringProjectAnalyzer:
             qualified_name=qualified_name,
             package_name=package_name,
             file_path=relative_path,
-            summary=_java_doc_summary(
-                source[declaration_start : class_match.start()]
-            ),
+            summary=_java_doc_summary(source[declaration_start : class_match.start()]),
             annotations=class_annotations,
             imports=imports,
             implements=implements,
@@ -302,12 +298,8 @@ class JavaSpringProjectAnalyzer:
                                     start_line=_line_number(source, absolute_start),
                                     end_line=_line_number(source, method_end),
                                     signature=signature.strip(),
-                                    source_excerpt=source[
-                                        absolute_start : method_end + 1
-                                    ][:4000],
-                                    summary=_java_doc_summary(
-                                        source[member_start:absolute_start]
-                                    ),
+                                    source_excerpt=source[absolute_start : method_end + 1][:4000],
+                                    summary=_java_doc_summary(source[member_start:absolute_start]),
                                 )
                             )
                         position = method_end + 1
@@ -353,12 +345,8 @@ class JavaSpringProjectAnalyzer:
                                 start_line=_line_number(source, absolute_start),
                                 end_line=_line_number(source, position),
                                 signature=signature.strip(),
-                                source_excerpt=source[
-                                    absolute_start : position + 1
-                                ][:4000],
-                                summary=_java_doc_summary(
-                                    source[member_start:absolute_start]
-                                ),
+                                source_excerpt=source[absolute_start : position + 1][:4000],
+                                summary=_java_doc_summary(source[member_start:absolute_start]),
                             )
                         )
                 member_start = position + 1
@@ -458,9 +446,7 @@ class JavaSpringProjectAnalyzer:
     ) -> list[dict[str, Any]]:
         endpoints: list[dict[str, Any]] = []
         for java_class in classes:
-            if not (
-                {"RestController", "Controller"} & java_class.annotation_names
-            ):
+            if not ({"RestController", "Controller"} & java_class.annotation_names):
                 continue
             class_paths = self._mapping_paths(java_class.annotations) or [""]
             category = _controller_category(java_class)
@@ -491,17 +477,13 @@ class JavaSpringProjectAnalyzer:
                                         "end_line": method.end_line,
                                         "summary": method.summary,
                                         "tags": [category],
-                                        "parameters": self._parameters(
-                                            method.parameters_text
-                                        ),
+                                        "parameters": self._parameters(method.parameters_text),
                                         "response_type": method.return_type,
                                         "dependencies": [],
                                         "extra_metadata": {
                                             "language": "java",
                                             "framework": "spring",
-                                            "controllerClass": (
-                                                java_class.qualified_name
-                                            ),
+                                            "controllerClass": (java_class.qualified_name),
                                             "controllerName": java_class.name,
                                             "packageName": java_class.package_name,
                                             "category": category,
@@ -628,23 +610,17 @@ class JavaSpringProjectAnalyzer:
         endpoints: list[dict[str, Any]],
     ) -> CallGraphResult:
         result = CallGraphResult()
-        endpoint_names = {
-            endpoint["qualified_name"] for endpoint in endpoints
-        }
+        endpoint_names = {endpoint["qualified_name"] for endpoint in endpoints}
         class_by_simple = {java_class.name: java_class for java_class in classes}
         implementations: dict[str, list[JavaClass]] = defaultdict(list)
-        methods_by_class_and_name: dict[
-            tuple[str, str], list[JavaMethod]
-        ] = defaultdict(list)
+        methods_by_class_and_name: dict[tuple[str, str], list[JavaMethod]] = defaultdict(list)
         methods_by_name: dict[str, list[JavaMethod]] = defaultdict(list)
 
         for java_class in classes:
             for implemented in java_class.implements:
                 implementations[_raw_type(implemented)].append(java_class)
             for method in java_class.methods:
-                methods_by_class_and_name[(java_class.name, method.name)].append(
-                    method
-                )
+                methods_by_class_and_name[(java_class.name, method.name)].append(method)
                 methods_by_name[method.name].append(method)
                 self._add_method_node(
                     result,
@@ -660,9 +636,7 @@ class JavaSpringProjectAnalyzer:
         }
         for java_class in classes:
             for method in java_class.methods:
-                body = java_class.structure[
-                    method.body_start + 1 : method.body_end
-                ]
+                body = java_class.structure[method.body_start + 1 : method.body_end]
                 for call in CALL_PATTERN.finditer(body):
                     called_name = call.group("method")
                     receiver = call.group("receiver")
@@ -689,12 +663,16 @@ class JavaSpringProjectAnalyzer:
                         )
                     absolute_offset = method.body_start + 1 + call.start()
                     line_number = _line_number(java_class.source, absolute_offset)
-                    evidence = java_class.source[
-                        absolute_offset : min(
-                            method.body_end,
-                            absolute_offset + 300,
-                        )
-                    ].splitlines()[0].strip()
+                    evidence = (
+                        java_class.source[
+                            absolute_offset : min(
+                                method.body_end,
+                                absolute_offset + 300,
+                            )
+                        ]
+                        .splitlines()[0]
+                        .strip()
+                    )
                     _add_relation(
                         result,
                         source_key=method.stable_key,
@@ -725,9 +703,7 @@ class JavaSpringProjectAnalyzer:
         receiver: str | None,
         class_by_simple: dict[str, JavaClass],
         implementations: dict[str, list[JavaClass]],
-        methods_by_class_and_name: dict[
-            tuple[str, str], list[JavaMethod]
-        ],
+        methods_by_class_and_name: dict[tuple[str, str], list[JavaMethod]],
         methods_by_name: dict[str, list[JavaMethod]],
     ) -> JavaMethod | None:
         candidate_classes: list[JavaClass] = []
@@ -743,7 +719,8 @@ class JavaSpringProjectAnalyzer:
             candidate_classes.extend(
                 candidate
                 for candidate in class_by_simple.values()
-                if candidate.name in {
+                if candidate.name
+                in {
                     f"{raw_field_type}Impl",
                     f"{interface_name}ServiceImpl",
                     f"{interface_name}Impl",
@@ -785,9 +762,8 @@ class JavaSpringProjectAnalyzer:
             node_type = "ROUTE_FUNCTION"
         elif "Service" in annotations or "Component" in annotations:
             node_type = "SERVICE"
-        elif (
-            {"Repository", "Mapper"} & annotations
-            or java_class.name.endswith(("Repository", "Mapper"))
+        elif {"Repository", "Mapper"} & annotations or java_class.name.endswith(
+            ("Repository", "Mapper")
         ):
             node_type = "REPOSITORY"
         else:
@@ -820,8 +796,7 @@ class JavaSpringProjectAnalyzer:
                     "returnType": method.return_type,
                     "parameterSummary": method.parameters_text.strip(),
                     "annotations": [
-                        annotation.name.rsplit(".", 1)[-1]
-                        for annotation in method.annotations
+                        annotation.name.rsplit(".", 1)[-1] for annotation in method.annotations
                     ],
                 },
             },
@@ -839,8 +814,7 @@ class JavaSpringProjectAnalyzer:
                 endpoint["qualified_name"],
             )
             api_key = (
-                f"api:{endpoint['http_method']}:{endpoint['path']}:"
-                f"{endpoint['qualified_name']}"
+                f"api:{endpoint['http_method']}:{endpoint['path']}:{endpoint['qualified_name']}"
             )
             result.endpoint_api_keys[identity] = api_key
             result.nodes.setdefault(
@@ -876,10 +850,7 @@ class JavaSpringProjectAnalyzer:
                     file_path=endpoint["file_path"],
                     line_number=endpoint["start_line"],
                     column_number=1,
-                    evidence=(
-                        f"@SpringMapping {endpoint['http_method']} "
-                        f"{endpoint['path']}"
-                    ),
+                    evidence=(f"@SpringMapping {endpoint['http_method']} {endpoint['path']}"),
                     metadata={"language": "java", "framework": "spring"},
                 )
 
@@ -1143,11 +1114,7 @@ def _class_category(java_class: JavaClass) -> str:
 def _business_steps(method: JavaMethod, java_class: JavaClass) -> list[str]:
     source = method.source_excerpt
     expected_opening = method.body_start - method.start_offset
-    opening = (
-        expected_opening
-        if 0 <= expected_opening < len(source)
-        else source.find("{")
-    )
+    opening = expected_opening if 0 <= expected_opening < len(source) else source.find("{")
     body = source[opening + 1 :] if opening >= 0 else source
     structure = _sanitize_java(body, mask_strings=True)
     steps: list[str] = []
@@ -1200,9 +1167,7 @@ def _business_logic(
         summary = f"处理 {category} 的 {method.name} 业务"
     call_steps = [step for step in steps if step.startswith("调用")]
     if call_steps:
-        call_summary = "、".join(
-            re.sub(r"^调用\s+", "", step) for step in call_steps[:3]
-        )
+        call_summary = "、".join(re.sub(r"^调用\s+", "", step) for step in call_steps[:3])
         summary = f"{summary}。主要协作：{call_summary}"
     if method.return_type and method.return_type != "void":
         summary = f"{summary}；最终返回 {method.return_type}"
@@ -1222,10 +1187,7 @@ def _add_relation(
     evidence: str | None,
     metadata: dict[str, Any],
 ) -> None:
-    raw_key = (
-        f"{source_key}|{relation_type}|{target_key}|{file_path}|"
-        f"{line_number}|{evidence}"
-    )
+    raw_key = f"{source_key}|{relation_type}|{target_key}|{file_path}|{line_number}|{evidence}"
     stable_key = hashlib.sha1(raw_key.encode("utf-8")).hexdigest()
     result.relations.setdefault(
         stable_key,

@@ -5,7 +5,7 @@ import {
   FolderOpenOutlined,
   ImportOutlined,
   SafetyCertificateOutlined,
-  ScanOutlined
+  ScanOutlined,
 } from "@ant-design/icons";
 import {
   App,
@@ -19,7 +19,7 @@ import {
   Spin,
   Tag,
   Tooltip,
-  Typography
+  Typography,
 } from "antd";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -34,33 +34,30 @@ const features = [
   {
     icon: <FolderOpenOutlined />,
     title: "导入本地项目",
-    description: "只读取项目目录，不执行目标代码。"
+    description: "只读取项目目录，不执行目标代码。",
   },
   {
     icon: <ApartmentOutlined />,
     title: "逐层查看调用",
-    description: "从 HTTP 接口进入，按需展开下游节点。"
+    description: "从 HTTP 接口进入，按需展开下游节点。",
   },
   {
     icon: <DatabaseOutlined />,
     title: "定位数据访问",
-    description: "追踪 Service、Repository 与资源调用。"
+    description: "追踪 Service、Repository 与资源调用。",
   },
   {
     icon: <SafetyCertificateOutlined />,
     title: "保留源码证据",
-    description: "每条关系都包含置信度、文件和行号。"
-  }
+    description: "每条关系都包含置信度、文件和行号。",
+  },
 ];
 
-const statusConfig: Record<
-  ScanStatus,
-  { color: string; label: string }
-> = {
+const statusConfig: Record<ScanStatus, { color: string; label: string }> = {
   NOT_SCANNED: { color: "default", label: "未扫描" },
   SCANNING: { color: "processing", label: "扫描中" },
   READY: { color: "success", label: "扫描完成" },
-  FAILED: { color: "error", label: "扫描失败" }
+  FAILED: { color: "error", label: "扫描失败" },
 };
 
 export function ProjectPage() {
@@ -73,7 +70,7 @@ export function ProjectPage() {
     fetchProjects,
     createProject,
     deleteProject,
-    startScan
+    startScan,
   } = useProjectStore();
   const [importOpen, setImportOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -113,7 +110,7 @@ export function ProjectPage() {
         } catch {
           message.error("项目删除失败");
         }
-      }
+      },
     });
   };
 
@@ -130,7 +127,7 @@ export function ProjectPage() {
   };
 
   const filteredProjects = projects.filter((project) =>
-    project.name.toLowerCase().includes(search.trim().toLowerCase())
+    project.name.toLowerCase().includes(search.trim().toLowerCase()),
   );
 
   return (
@@ -175,7 +172,9 @@ export function ProjectPage() {
           <Spin spinning={loading && projects.length === 0}>
             {filteredProjects.length === 0 ? (
               <Empty
-                description={projects.length ? "没有匹配的项目" : "还没有导入项目"}
+                description={
+                  projects.length ? "没有匹配的项目" : "还没有导入项目"
+                }
               >
                 {!projects.length && (
                   <Button type="primary" onClick={() => setImportOpen(true)}>
@@ -202,7 +201,11 @@ export function ProjectPage() {
                           </div>
                         </div>
                         <Tooltip title={project.rootPath}>
-                          <Text type="secondary" ellipsis className="project-path">
+                          <Text
+                            type="secondary"
+                            ellipsis
+                            className="project-path"
+                          >
                             {project.rootPath}
                           </Text>
                         </Tooltip>
@@ -210,7 +213,9 @@ export function ProjectPage() {
                           <span>
                             <strong>{project.totalFiles}</strong>
                             <Text type="secondary">
-                              {project.language === "java" ? " Java 文件" : " Python 文件"}
+                              {project.language === "java"
+                                ? " Java 文件"
+                                : " Python 文件"}
                             </Text>
                           </span>
                           <span>
@@ -221,7 +226,9 @@ export function ProjectPage() {
                         <Space className="project-actions">
                           <Button
                             type="primary"
-                            onClick={() => navigate(`/projects/${project.id}/graph`)}
+                            onClick={() =>
+                              navigate(`/projects/${project.id}/graph`)
+                            }
                           >
                             打开工作台
                           </Button>
@@ -231,7 +238,9 @@ export function ProjectPage() {
                             disabled={project.scanStatus === "SCANNING"}
                             onClick={() => void handleScan(project)}
                           >
-                            {project.scanStatus === "READY" ? "重新扫描" : "扫描"}
+                            {project.scanStatus === "READY"
+                              ? "重新扫描"
+                              : "扫描"}
                           </Button>
                           <Button
                             type="text"
