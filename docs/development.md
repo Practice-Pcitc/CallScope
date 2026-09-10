@@ -20,3 +20,11 @@ Windows PowerShell 执行策略阻止 npm.ps1 时使用 npm.cmd。
 CI 自动执行这些检查。迁移测试也属于后端测试。
 
 历史阶段交付文档保留用于追溯，当前运行方式以根 README 为准。
+
+## Windows 安装依赖报 EPERM
+
+若 `npm ci` 提示无法 unlink `esbuild.exe`，先在运行本项目 Vite 或测试的终端按 Ctrl+C，再重新安装。Windows 上运行中的可执行文件可能无法删除；`npm ci` 会重新创建依赖目录，因此不能与开发服务器同时运行。若停止后仍报错，再检查文件权限或安全软件占用。
+
+项目通过 `frontend/.npmrc` 将 npm 缓存设为 `.npm-cache`，避免继承本机不可写的全局缓存位置；此目录已经被 Git 忽略。
+
+依赖安装成功后，日常启动只需在 frontend 目录运行 `npm.cmd run dev`，不必每次都执行 `npm ci`。
