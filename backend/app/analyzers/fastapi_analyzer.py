@@ -4,7 +4,7 @@ import ast
 import re
 from collections import defaultdict, deque
 from collections.abc import Callable, Iterable
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any
 
@@ -191,9 +191,69 @@ class FastAPIProjectAnalyzer:
                 self._collect_binding_or_include(facts, node)
             elif node.type == "decorated_definition":
                 self._collect_routes(facts, node)
+            elif node.type == "function_definition":
+                self._collect_app_factory(facts, node)
             elif node.type == "class_definition":
                 self._collect_pydantic_model(facts, node)
                 self._collect_class_defaults(facts, node)
+
+    def _collect_app_factory(self, facts: ModuleFacts, function: Node) -> None:
+        """Recognize directly returned applications without executing factory code.
+
+        Keep local bindings scoped so two factories may both name their app `app`.
+        Conditional registration and indirect return values remain unsupported.
+        """
+        body = function.child_by_field_name("body")
+        name = function.child_by_field_name("name")
+        if body is None or name is None:
+            return
+        local = ModuleFacts(
+            module_name=facts.module_name,
+            file_path=facts.file_path,
+            is_package=facts.is_package,
+            parsed=facts.parsed,
+            imports=dict(facts.imports),
+            constants=dict(facts.constants),
+        )
+        for statement in body.named_children:
+            if statement.type == "expression_statement":
+                self._collect_constant(local, statement)
+                self._collect_binding_or_include(local, statement)
+            elif statement.type == "decorated_definition":
+                self._collect_routes(local, statement)
+        returned = {
+            facts.parsed.text(node.named_children[0])
+            for node in body.named_children
+            if node.type == "return_statement" and len(node.named_children) == 1
+        }
+        if not any(
+            binding.kind == "APP" and key in returned for key, binding in local.bindings.items()
+        ):
+            return
+        scope = facts.parsed.text(name)
+        names = {key: f"{scope}.{key}" for key in local.bindings}
+        for key, binding in local.bindings.items():
+            facts.bindings[names[key]] = replace(binding, variable_name=names[key])
+        for include in local.includes:
+            facts.includes.append(
+                replace(
+                    include,
+                    parent_expression=names.get(
+                        include.parent_expression, include.parent_expression
+                    ),
+                    child_expression=names.get(include.child_expression, include.child_expression),
+                )
+            )
+        for route in local.routes:
+            facts.routes.append(
+                replace(
+                    route,
+                    receiver_expression=names.get(
+                        route.receiver_expression, route.receiver_expression
+                    ),
+                    function_name=f"{scope}.{route.function_name}",
+                )
+            )
 
     def _collect_import(self, facts: ModuleFacts, node: Node) -> None:
         parsed = facts.parsed

@@ -117,3 +117,49 @@ def test_analyzer_resolves_package_modules_below_repository_root(
     assert len(result.endpoints) == 1
     assert result.endpoints[0]["path"] == "/api/v1/users/{user_id}"
     assert result.endpoints[0]["qualified_name"] == "backend.app.api.v1.users.get_user"
+
+
+def test_application_factories_preserve_local_scopes(tmp_path):
+    (tmp_path / "main.py").write_text(
+        """
+from fastapi import FastAPI, APIRouter
+router = APIRouter()
+@router.get("/items")
+def items():
+    return []
+def create_app():
+    app = FastAPI()
+    app.include_router(router, prefix="/api/v1")
+    @app.get("/health")
+    def health():
+        return {}
+    return app
+def other_app():
+    app = FastAPI()
+    app.include_router(router, prefix="/other")
+    return app
+def unrelated():
+    app = FastAPI()
+    app.include_router(router, prefix="/not-mounted")
+app = create_app()
+""",
+        encoding="utf-8",
+    )
+    result = FastAPIProjectAnalyzer().analyze(root=tmp_path, files=["main.py"])
+    assert not result.issues
+    assert {item["path"] for item in result.endpoints} == {
+        "/api/v1/items",
+        "/other/items",
+        "/health",
+    }
+
+
+def test_callscope_factory_registers_its_actual_api():
+    root = Path(__file__).parents[2]
+    files = [p.relative_to(root).as_posix() for p in (root / "app").rglob("*.py")]
+    result = FastAPIProjectAnalyzer().analyze(root=root, files=files)
+    paths = {item["path"] for item in result.endpoints}
+    assert "/api/v1/health" in paths
+    assert "/api/v1/projects" in paths
+    assert "/api/v1/projects/{project_id}/scans" in paths
+    assert len(result.endpoints) >= 20
