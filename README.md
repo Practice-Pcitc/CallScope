@@ -1,88 +1,84 @@
 # CallScope（调用视界）
 
-从 HTTP 接口入口查看 FastAPI、Spring Boot 项目的静态调用关系，结合源码证据理解业务流程。
+CallScope 是一个面向 FastAPI 和 Spring Boot 项目的接口调用拓扑分析工具，帮助开发者从 HTTP 接口入口理解代码调用关系和业务流程。
 
-![合成 FastAPI 样例的拓扑与 AI 分析](docs/screenshots/workspace.png)
+阅读后端项目时，一个接口的逻辑往往分散在路由、Service、Repository 和外部服务中，需要反复跳转文件才能串起完整链路。CallScope 通过静态分析将这些关系展示为可交互拓扑，并保留源码位置与调用证据，辅助代码阅读和修改影响排查。
 
-截图来自本地浏览器，使用仓库合成样例和本地证据分析。
+## 技术栈
+
+| 分类 | 技术与用途 |
+| --- | --- |
+| 后端 | Python、FastAPI、Pydantic；Tree-sitter 解析源码，NetworkX 处理调用图 |
+| 前端 | React、TypeScript、Vite、Ant Design；D3 展示拓扑，Zustand 管理状态 |
+| 数据库 | SQLite、SQLAlchemy、Alembic，保存扫描结果并管理表结构迁移 |
+| AI 分析 | 默认使用本地证据分析，可选接入 OpenAI 兼容模型接口；通过结构化输出校验和引用白名单约束结果 |
+
+## 功能演示
+
+![FastAPI 样例的调用拓扑与业务分析](docs/screenshots/workspace.png)
+
+截图由本地浏览器实际渲染，使用仓库内的合成 FastAPI 样例和本地证据分析。
 
 ## 核心功能
 
-- 导入本地项目并后台扫描，不执行目标代码；删除记录不会删除源码。
-- 识别接口、函数与数据库、Redis、外部 HTTP 调用，保留位置、证据和置信度。
-- 逐层展开、折叠和合并调用拓扑，查看节点上下游及源码。
-- 根据已扫描证据生成单接口、多接口及节点影响分析，支持本地分析和兼容模型服务。
-- 缓存分析结果，扫描更新后标记过期，外部模型任务支持状态查询与失败后重试。
+- **项目扫描与接口识别**：导入本地 FastAPI 或 Spring Boot 项目，识别接口入口及基础调用关系，不执行目标代码。
+- **交互式调用拓扑**：逐层展开、折叠调用节点，合并多个接口的拓扑，查看上下游关系。
+- **源码与证据定位**：查看函数签名、源码片段、调用位置及置信度，辅助核实分析结果。
+- **业务链路分析**：支持单接口、多接口和节点影响分析，将分析条目与拓扑节点关联定位。
+
+## 实现流程
 
 ```mermaid
 flowchart LR
-    A[本地源码] --> B[安全扫描与静态解析]
-    B --> C[SQLite 调用图与证据]
-    C --> D[React / D3 交互拓扑]
-    C --> E[本地分析或外部模型]
-    E --> D
+    A[导入本地项目] --> B[扫描源码]
+    B --> C[识别接口与调用关系]
+    C --> D[保存调用图与源码证据]
+    D --> E[交互式拓扑展示]
+    D --> F[本地证据分析或外部模型分析]
+    F --> G[业务说明与拓扑关联定位]
+    E --> G
 ```
 
-技术栈：Python 3.11+、FastAPI、SQLAlchemy、Alembic、Tree-sitter、NetworkX；React 19、TypeScript、Vite、D3、Zustand、Ant Design。
+## 快速开始
 
-## 本地启动
-
-需要 Python 3.11+、uv、Node.js 22.12+ 和 npm。以下命令从项目根目录执行；Windows 可用 `npm.cmd` 代替 `npm`。
+环境要求：Python 3.11+、uv、Node.js 22.12+ 和 npm。下载或克隆项目后，打开两个终端，均从项目根目录开始执行。
 
 后端终端：
 
 ```powershell
 cd backend
 uv sync --frozen
-# 可选：首次配置时复制，已有 .env 请直接编辑，避免覆盖
-Copy-Item .env.example .env
 uv run alembic upgrade head
 uv run uvicorn app.main:app --host 127.0.0.1 --reload
 ```
 
-前端另开终端，从项目根目录执行：
+前端终端（Windows PowerShell）：
 
 ```powershell
 cd frontend
-npm ci
-npm run dev
+npm.cmd ci
+npm.cmd run dev
 ```
 
-打开 [本地页面](http://localhost:5173)，[接口文档](http://127.0.0.1:8000/docs)。默认无需模型密钥。
-在页面导入 `backend/tests/fixtures/fastapi_sample` 的本机绝对路径可体验合成示例。
+macOS / Linux 将 `npm.cmd` 换成 `npm`。默认配置使用 SQLite 和本地证据分析，无需模型密钥；请从 `backend` 目录启动后端，确保数据库路径一致。
 
-## 使用边界与配置
+打开 [项目页面](http://localhost:5173)，在“导入本地项目”中填写目标项目的绝对路径。可先使用仓库中 `backend/tests/fixtures/fastapi_sample` 的本机绝对路径体验，扫描后打开工作台选择接口。
 
-这是单用户本地工具，没有登录和多租户隔离；后端只绑定回环地址，勿直接暴露到公网或局域网。项目 ID 校验用于防止跨项目混用节点，不能替代用户认证。
+接口文档：[Swagger UI](http://127.0.0.1:8000/docs)。外部模型配置及安装排错见[开发说明](docs/development.md)。
 
-默认 `CALLSCOPE_AI_PROVIDER=local` 只根据证据生成分析。启用 `openai-compatible` 时，在 `backend/.env` 配置模型名、密钥和服务地址；所选拓扑及启用的源码片段会发送给该服务，应只分析可共享的代码。默认不保存原始 Prompt 和模型原始响应；结构化结果可能包含业务信息，启动时清理超过 `CALLSCOPE_AI_RETENTION_DAYS`（默认 30 天）的分析记录。删除项目会级联移除数据库中的扫描与分析记录。
+## 参与方式与限制
 
-前端可选配置见 `frontend/.env.example`，只允许公开变量。后端优先使用 `backend/.env`，根目录 `.env` 是兼容回退；系统环境变量优先级最高。SQLite 默认文件位于启动后端时的工作目录，因此请从 `backend` 启动。
+**参与方式**：项目维护者提出规范整理要求、反馈使用中遇到的问题并确认修改方向；Codex 辅助完成相关重构、问题修复、测试和文档整理。
 
-静态分析无法完整还原动态分派、反射及运行期条件，AI 结论需要结合源码核实。本项目没有 RAG、MCP、会话记忆或自主工具执行，因此不创建这些空模块。
+**使用限制**：
 
-本次规范整理由项目维护者提出要求，Codex 辅助完成重构、文档和自动化测试；不据此声明此前全部代码的个人独立开发经历。
+- 当前面向单用户本地使用，没有登录或多租户隔离，不应直接暴露到公网或局域网。
+- 静态分析不能完整还原动态分派、反射及运行期条件，分析结论需要结合源码核实。
+- 启用外部模型时，所选拓扑及启用的源码片段会发送给对应服务，请只分析允许共享的代码。
 
-## 验证和开发
+## 详细文档
 
-```powershell
-# backend 目录
-uv run ruff check app tests alembic
-uv run ruff format --check app tests alembic
-uv run pytest
-
-# frontend 目录
-npm run format:check
-npm test
-npm run build
-npm run test:e2e
-```
-
-Windows 浏览器测试默认使用已安装的 Edge；CI 安装 Chromium。测试使用合成示例与 Fake 模型，不调用付费模型。
-
-- [架构与规范适配](docs/architecture.md)
-- [API 与版本迁移](docs/api.md)
+- [架构与模块职责](docs/architecture.md)
+- [配置、验证与常见问题](docs/development.md)
+- [API 说明](docs/api.md)
 - [数据库与迁移](docs/database.md)
-- [本地运行与维护](docs/development.md)
-- [规范核对记录](docs/standards-review.md)
-- [变更记录](CHANGELOG.md)

@@ -28,3 +28,27 @@ CI 自动执行这些检查。迁移测试也属于后端测试。
 项目通过 `frontend/.npmrc` 将 npm 缓存设为 `.npm-cache`，避免继承本机不可写的全局缓存位置；此目录已经被 Git 忽略。
 
 依赖安装成功后，日常启动只需在 frontend 目录运行 `npm.cmd run dev`，不必每次都执行 `npm ci`。
+
+
+## 可选配置与数据保留
+
+默认运行无需创建 .env。需要调整配置时，首次可将 `backend/.env.example` 复制为 `backend/.env`；已有文件直接编辑，避免覆盖。
+系统环境变量优先级最高，其次是 `backend/.env`，根目录 `.env` 作为兼容回退。
+前端配置模板为 `frontend/.env.example`，其中只能放公开配置，不能放模型密钥。
+
+默认 `CALLSCOPE_AI_PROVIDER=local` 根据已扫描证据生成分析，不调用外部模型。接入外部模型时，在 `backend/.env` 设置：
+
+```dotenv
+CALLSCOPE_AI_PROVIDER=openai-compatible
+CALLSCOPE_AI_MODEL=your-model-name
+CALLSCOPE_AI_API_KEY=
+CALLSCOPE_AI_BASE_URL=https://your-provider.example/v1
+```
+
+将占位模型名和服务地址替换为实际值，并在本地填入密钥；这些配置文件禁止提交。启用后，所选拓扑及启用的源码片段会发送给模型服务。
+
+原始 Prompt 和模型原始响应不持久化；结构化分析结果可能包含业务信息。启动时清理超过 `CALLSCOPE_AI_RETENTION_DAYS`（默认 30 天）的分析记录。
+删除项目会级联移除数据库中的扫描与分析记录，不删除目标源码。
+
+扫描更新后旧分析会标记过期。外部模型分析使用后台任务和状态查询，支持失败后重试；客户端取消等待不会取消服务器任务。
+测试使用合成样例、本地证据 Provider 或 Fake 模型，默认不调用付费真实模型。完整规范核对记录见 [standards-review.md](standards-review.md)。
