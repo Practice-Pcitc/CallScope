@@ -1,6 +1,7 @@
+from datetime import UTC, datetime
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class ApiModel(BaseModel):
@@ -8,11 +9,18 @@ class ApiModel(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=lambda value: "".join(
-            word.capitalize() if index else word
-            for index, word in enumerate(value.split("_"))
+            word.capitalize() if index else word for index, word in enumerate(value.split("_"))
         ),
         populate_by_name=True,
     )
+
+    @field_validator("*", mode="after")
+    @classmethod
+    def normalize_datetime(cls, value: Any) -> Any:
+        # SQLite returns naive values even for DateTime(timezone=True).
+        if isinstance(value, datetime):
+            return value.replace(tzinfo=UTC) if value.tzinfo is None else value.astimezone(UTC)
+        return value
 
 
 class ErrorBody(ApiModel):
@@ -30,4 +38,3 @@ class PaginationMeta(ApiModel):
     page: int
     page_size: int
     total: int
-

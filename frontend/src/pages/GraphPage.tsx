@@ -25,7 +25,7 @@ export function GraphPage() {
     loading,
     fetchProject,
     refreshScan,
-    startScan
+    startScan,
   } = useProjectStore();
   const resetEndpoints = useEndpointStore((state) => state.reset);
   const resetGraph = useGraphStore((state) => state.reset);
@@ -48,7 +48,7 @@ export function GraphPage() {
     refreshScan,
     resetAI,
     resetEndpoints,
-    resetGraph
+    resetGraph,
   ]);
 
   useScanPolling(projectId);

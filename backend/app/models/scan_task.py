@@ -22,9 +22,7 @@ class ScanTask(Base):
         Index("ix_scan_tasks_project_status", "project_id", "status"),
     )
 
-    id: Mapped[str] = mapped_column(
-        String(36), primary_key=True, default=lambda: str(uuid4())
-    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
     project_id: Mapped[str] = mapped_column(
         String(36),
         ForeignKey("projects.id", ondelete="CASCADE"),
@@ -46,9 +44,7 @@ class ScanTask(Base):
     skipped_files: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     failed_files: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
-    error_summary: Mapped[list[dict[str, Any]]] = mapped_column(
-        JSON, nullable=False, default=list
-    )
+    error_summary: Mapped[list[dict[str, Any]]] = mapped_column(JSON, nullable=False, default=list)
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(
@@ -56,3 +52,7 @@ class ScanTask(Base):
     )
 
     project: Mapped[Project] = relationship(back_populates="scan_tasks")
+
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=utc_now, onupdate=utc_now
+    )

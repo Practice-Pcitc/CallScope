@@ -23,4 +23,3 @@ def health_check() -> HealthResponse:
             database="ok",
         )
     )
-

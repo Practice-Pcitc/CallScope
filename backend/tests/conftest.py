@@ -4,6 +4,8 @@ import pytest
 
 # Tests must never create or drop tables in the developer's callscope.db.
 os.environ["CALLSCOPE_DATABASE_URL"] = "sqlite://"
+os.environ["CALLSCOPE_AI_PROVIDER"] = "local"
+os.environ["CALLSCOPE_AI_API_KEY"] = ""
 
 from app.core.database import engine  # noqa: E402
 from app.models import Base  # noqa: E402

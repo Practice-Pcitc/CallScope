@@ -51,4 +51,3 @@ class TreeSitterPythonParser:
             return encoding
         except (SyntaxError, UnicodeDecodeError):
             return "utf-8"
-

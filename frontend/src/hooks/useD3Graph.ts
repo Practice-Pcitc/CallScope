@@ -6,7 +6,7 @@ import {
   layoutGraph,
   NODE_HEIGHT,
   NODE_WIDTH,
-  type NodePosition
+  type NodePosition,
 } from "../utils/graphLayout";
 
 interface UseD3GraphOptions {
@@ -34,7 +34,7 @@ const TYPE_COLORS: Record<string, string> = {
   REDIS: "#ef5b64",
   EXTERNAL_HTTP: "#4ec7d3",
   PYDANTIC_MODEL: "#ac77e8",
-  UNRESOLVED: "#697181"
+  UNRESOLVED: "#697181",
 };
 
 function truncate(value: string, length: number): string {
@@ -43,7 +43,7 @@ function truncate(value: string, length: number): string {
 
 function edgePath(
   edge: GraphEdge,
-  positions: Map<string, NodePosition>
+  positions: Map<string, NodePosition>,
 ): string {
   const source = positions.get(edge.source);
   const target = positions.get(edge.target);
@@ -70,7 +70,7 @@ export function useD3Graph({
   layoutVersion,
   onNodeClick,
   onNodeToggle,
-  onEdgeClick
+  onEdgeClick,
 }: UseD3GraphOptions) {
   const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
   const viewportRef = useRef<SVGGElement | null>(null);
@@ -78,14 +78,14 @@ export function useD3Graph({
 
   const visibleIds = useMemo(
     () => new Set(nodes.map((node) => node.id)),
-    [nodes]
+    [nodes],
   );
   const visibleEdges = useMemo(
     () =>
       edges.filter(
-        (edge) => visibleIds.has(edge.source) && visibleIds.has(edge.target)
+        (edge) => visibleIds.has(edge.source) && visibleIds.has(edge.target),
       ),
-    [edges, visibleIds]
+    [edges, visibleIds],
   );
 
   useEffect(() => {
@@ -156,10 +156,7 @@ export function useD3Graph({
       if (!selectedNodeId) {
         return true;
       }
-      return (
-        relatedIds.has(edge.source) &&
-        relatedIds.has(edge.target)
-      );
+      return relatedIds.has(edge.source) && relatedIds.has(edge.target);
     };
 
     const redrawEdges = () => {
@@ -173,9 +170,7 @@ export function useD3Graph({
         .attr("x", (edge) => {
           const source = positionsRef.current.get(edge.source);
           const target = positionsRef.current.get(edge.target);
-          return source && target
-            ? (source.x + NODE_WIDTH + target.x) / 2
-            : 0;
+          return source && target ? (source.x + NODE_WIDTH + target.x) / 2 : 0;
         })
         .attr("y", (edge) => {
           const source = positionsRef.current.get(edge.source);
@@ -211,7 +206,7 @@ export function useD3Graph({
       .classed("selected", (edge) => edge.id === selectedEdgeId)
       .classed("ai-highlighted", (edge) => aiEdgeIds.has(edge.id))
       .classed("low-confidence", (edge) =>
-        ["MEDIUM", "LOW"].includes(edge.confidence)
+        ["MEDIUM", "LOW"].includes(edge.confidence),
       )
       .style("opacity", (edge) => {
         if (!selectedNodeId) {
@@ -324,7 +319,9 @@ export function useD3Graph({
       .classed("selected", (node) => node.id === selectedNodeId)
       .classed("ai-highlighted", (node) => aiNodeIds.has(node.id))
       .classed("shared", (node) => node.shared)
-      .classed("dimmed", (node) => Boolean(selectedNodeId && !relatedIds.has(node.id)))
+      .classed("dimmed", (node) =>
+        Boolean(selectedNodeId && !relatedIds.has(node.id)),
+      )
       .attr("aria-label", (node) => `${node.type} ${node.name}`)
       .transition()
       .duration(280)
@@ -350,7 +347,7 @@ export function useD3Graph({
       .text((node) =>
         node.hasChildren
           ? `${node.expanded ? "−" : "+"}${node.childCount}`
-          : ""
+          : "",
       );
     mergedNodes.call(
       d3
@@ -367,13 +364,13 @@ export function useD3Graph({
           position.y += event.dy;
           d3.select(this).attr(
             "transform",
-            `translate(${position.x},${position.y})`
+            `translate(${position.x},${position.y})`,
           );
           redrawEdges();
         })
         .on("end", function () {
           d3.select(this).classed("dragging", false);
-        })
+        }),
     );
     redrawEdges();
 
@@ -393,7 +390,7 @@ export function useD3Graph({
     selectedEdgeId,
     selectedNodeId,
     svgRef,
-    visibleEdges
+    visibleEdges,
   ]);
 
   const controls = useMemo(
@@ -422,11 +419,11 @@ export function useD3Graph({
       fit: () => {
         const svg = svgRef.current;
         if (!svg || !zoomRef.current) {
-            return;
+          return;
         }
         const positions = [...positionsRef.current.values()];
         if (!positions.length) {
-            return;
+          return;
         }
         const minX = Math.min(...positions.map((position) => position.x));
         const minY = Math.min(...positions.map((position) => position.y));
@@ -436,27 +433,27 @@ export function useD3Graph({
           x: minX,
           y: minY,
           width: maxX - minX + NODE_WIDTH,
-          height: maxY - minY + NODE_HEIGHT
+          height: maxY - minY + NODE_HEIGHT,
         };
         const width = svg.clientWidth;
         const height = svg.clientHeight;
         const scale = Math.min(
           1.25,
-          0.82 / Math.max(bounds.width / width, bounds.height / height)
+          0.82 / Math.max(bounds.width / width, bounds.height / height),
         );
         const transform = d3.zoomIdentity
           .translate(
             width / 2 - scale * (bounds.x + bounds.width / 2),
-            height / 2 - scale * (bounds.y + bounds.height / 2)
+            height / 2 - scale * (bounds.y + bounds.height / 2),
           )
           .scale(scale);
         d3.select(svg)
           .transition()
           .duration(320)
           .call(zoomRef.current.transform, transform);
-      }
+      },
     }),
-    [svgRef]
+    [svgRef],
   );
 
   return controls;

@@ -8,4 +8,3 @@ api_router.include_router(
     prefix="/accounts",
     tags=["mounted"],
 )
-

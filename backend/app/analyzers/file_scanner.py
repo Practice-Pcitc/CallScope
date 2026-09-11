@@ -51,9 +51,7 @@ class FileScanner:
         self.max_directory_entries = max_directory_entries
         self.error_limit = error_limit
         self.supported_extensions = {
-            extension.casefold()
-            if extension.startswith(".")
-            else f".{extension.casefold()}"
+            extension.casefold() if extension.startswith(".") else f".{extension.casefold()}"
             for extension in (supported_extensions or {".py", ".java"})
         }
 
@@ -77,16 +75,14 @@ class FileScanner:
                     result,
                     path=self._relative_path(root, directory),
                     code="DIRECTORY_UNREADABLE",
-                    message=str(exc),
+                    message=f"文件处理失败（{type(exc).__name__}），请检查文件格式和读取权限",
                 )
                 continue
 
             for entry in entries:
                 result.visited_entries += 1
                 if result.visited_entries > self.max_directory_entries:
-                    raise ScanLimitError(
-                        f"目录项数量超过限制 {self.max_directory_entries}"
-                    )
+                    raise ScanLimitError(f"目录项数量超过限制 {self.max_directory_entries}")
 
                 entry_path = Path(entry.path)
                 relative_path = self._relative_path(root, entry_path)
@@ -150,7 +146,7 @@ class FileScanner:
                         result,
                         path=relative_path,
                         code="FILE_UNREADABLE",
-                        message=str(exc),
+                        message=f"文件处理失败（{type(exc).__name__}），请检查文件格式和读取权限",
                     )
 
         result.files.sort()

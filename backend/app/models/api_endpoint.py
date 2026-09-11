@@ -38,9 +38,7 @@ class ApiEndpoint(Base):
         ),
     )
 
-    id: Mapped[str] = mapped_column(
-        String(36), primary_key=True, default=lambda: str(uuid4())
-    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
     project_id: Mapped[str] = mapped_column(
         String(36),
         ForeignKey("projects.id", ondelete="CASCADE"),
@@ -57,13 +55,9 @@ class ApiEndpoint(Base):
     end_line: Mapped[int] = mapped_column(Integer, nullable=False)
     summary: Mapped[str | None] = mapped_column(Text)
     tags: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
-    parameters: Mapped[list[dict[str, Any]]] = mapped_column(
-        JSON, nullable=False, default=list
-    )
+    parameters: Mapped[list[dict[str, Any]]] = mapped_column(JSON, nullable=False, default=list)
     response_type: Mapped[str | None] = mapped_column(Text)
-    dependencies: Mapped[list[dict[str, Any]]] = mapped_column(
-        JSON, nullable=False, default=list
-    )
+    dependencies: Mapped[list[dict[str, Any]]] = mapped_column(JSON, nullable=False, default=list)
     extra_metadata: Mapped[dict[str, Any]] = mapped_column(
         "metadata", JSON, nullable=False, default=dict
     )
@@ -71,3 +65,6 @@ class ApiEndpoint(Base):
         DateTime(timezone=True), nullable=False, default=utc_now
     )
 
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=utc_now, onupdate=utc_now
+    )

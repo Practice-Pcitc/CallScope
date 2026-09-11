@@ -17,7 +17,7 @@ export function RightInspector() {
               <RobotOutlined /> AI 分析
             </span>
           ),
-          children: <AIAnalysisPanel />
+          children: <AIAnalysisPanel />,
         },
         {
           key: "detail",
@@ -26,8 +26,8 @@ export function RightInspector() {
               <CodeOutlined /> 节点详情
             </span>
           ),
-          children: <DetailPanel />
-        }
+          children: <DetailPanel />,
+        },
       ]}
     />
   );

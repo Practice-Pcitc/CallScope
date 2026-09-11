@@ -18,13 +18,13 @@ createRoot(document.getElementById("root")!).render(
           colorBorder: "#252a35",
           borderRadius: 10,
           fontFamily:
-            "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
-        }
+            "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        },
       }}
     >
       <AntdApp>
         <AppRouter />
       </AntdApp>
     </ConfigProvider>
-  </StrictMode>
+  </StrictMode>,
 );

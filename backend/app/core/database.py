@@ -35,6 +35,7 @@ if settings.database_url.startswith("sqlite"):
         cursor.execute("PRAGMA foreign_keys=ON")
         cursor.close()
 
+
 SessionLocal = sessionmaker(
     bind=engine,
     class_=Session,

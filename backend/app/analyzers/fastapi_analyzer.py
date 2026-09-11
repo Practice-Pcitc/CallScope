@@ -4,7 +4,7 @@ import ast
 import re
 from collections import defaultdict, deque
 from collections.abc import Callable, Iterable
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any
 
@@ -171,7 +171,7 @@ class FastAPIProjectAnalyzer:
                     AnalyzerIssue(
                         path=relative_path,
                         code="PYTHON_PARSE_FAILED",
-                        message=str(exc),
+                        message=f"文件处理失败（{type(exc).__name__}），请检查文件格式和读取权限",
                     )
                 )
 
@@ -191,9 +191,69 @@ class FastAPIProjectAnalyzer:
                 self._collect_binding_or_include(facts, node)
             elif node.type == "decorated_definition":
                 self._collect_routes(facts, node)
+            elif node.type == "function_definition":
+                self._collect_app_factory(facts, node)
             elif node.type == "class_definition":
                 self._collect_pydantic_model(facts, node)
                 self._collect_class_defaults(facts, node)
+
+    def _collect_app_factory(self, facts: ModuleFacts, function: Node) -> None:
+        """Recognize directly returned applications without executing factory code.
+
+        Keep local bindings scoped so two factories may both name their app `app`.
+        Conditional registration and indirect return values remain unsupported.
+        """
+        body = function.child_by_field_name("body")
+        name = function.child_by_field_name("name")
+        if body is None or name is None:
+            return
+        local = ModuleFacts(
+            module_name=facts.module_name,
+            file_path=facts.file_path,
+            is_package=facts.is_package,
+            parsed=facts.parsed,
+            imports=dict(facts.imports),
+            constants=dict(facts.constants),
+        )
+        for statement in body.named_children:
+            if statement.type == "expression_statement":
+                self._collect_constant(local, statement)
+                self._collect_binding_or_include(local, statement)
+            elif statement.type == "decorated_definition":
+                self._collect_routes(local, statement)
+        returned = {
+            facts.parsed.text(node.named_children[0])
+            for node in body.named_children
+            if node.type == "return_statement" and len(node.named_children) == 1
+        }
+        if not any(
+            binding.kind == "APP" and key in returned for key, binding in local.bindings.items()
+        ):
+            return
+        scope = facts.parsed.text(name)
+        names = {key: f"{scope}.{key}" for key in local.bindings}
+        for key, binding in local.bindings.items():
+            facts.bindings[names[key]] = replace(binding, variable_name=names[key])
+        for include in local.includes:
+            facts.includes.append(
+                replace(
+                    include,
+                    parent_expression=names.get(
+                        include.parent_expression, include.parent_expression
+                    ),
+                    child_expression=names.get(include.child_expression, include.child_expression),
+                )
+            )
+        for route in local.routes:
+            facts.routes.append(
+                replace(
+                    route,
+                    receiver_expression=names.get(
+                        route.receiver_expression, route.receiver_expression
+                    ),
+                    function_name=f"{scope}.{route.function_name}",
+                )
+            )
 
     def _collect_import(self, facts: ModuleFacts, node: Node) -> None:
         parsed = facts.parsed
@@ -276,11 +336,7 @@ class FastAPIProjectAnalyzer:
             return
         attribute = function.child_by_field_name("attribute")
         parent = function.child_by_field_name("object")
-        if (
-            not attribute
-            or not parent
-            or facts.parsed.text(attribute) != "include_router"
-        ):
+        if not attribute or not parent or facts.parsed.text(attribute) != "include_router":
             return
         positional = self._call_positional(expression)
         if not positional:
@@ -305,11 +361,7 @@ class FastAPIProjectAnalyzer:
 
     def _collect_routes(self, facts: ModuleFacts, decorated: Node) -> None:
         function = next(
-            (
-                child
-                for child in decorated.named_children
-                if child.type == "function_definition"
-            ),
+            (child for child in decorated.named_children if child.type == "function_definition"),
             None,
         )
         if not function:
@@ -322,9 +374,7 @@ class FastAPIProjectAnalyzer:
         return_node = function.child_by_field_name("return_type")
         parameters = self._function_parameters(facts, function)
 
-        for decorator in (
-            child for child in decorated.named_children if child.type == "decorator"
-        ):
+        for decorator in (child for child in decorated.named_children if child.type == "decorator"):
             if not decorator.named_children:
                 continue
             call = decorator.named_children[0]
@@ -381,9 +431,7 @@ class FastAPIProjectAnalyzer:
                     summary=summary,
                     docstring=docstring,
                     route_tags=self._string_list(facts, keywords.get("tags")),
-                    response_type=(
-                        facts.parsed.text(response_node) if response_node else None
-                    ),
+                    response_type=(facts.parsed.text(response_node) if response_node else None),
                     parameters=[dict(parameter) for parameter in parameters],
                     dependencies=[
                         *[
@@ -401,16 +449,12 @@ class FastAPIProjectAnalyzer:
         superclasses = node.child_by_field_name("superclasses")
         if not name_node or not superclasses:
             return
-        superclass_names = [
-            facts.parsed.text(child) for child in superclasses.named_children
-        ]
+        superclass_names = [facts.parsed.text(child) for child in superclasses.named_children]
         for superclass in superclass_names:
             root_name = superclass.split(".")[0]
             imported = facts.imports.get(root_name)
             if superclass.endswith("BaseModel") or (
-                imported
-                and imported.module == "pydantic"
-                and imported.symbol == "BaseModel"
+                imported and imported.module == "pydantic" and imported.symbol == "BaseModel"
             ):
                 facts.pydantic_models.add(facts.parsed.text(name_node))
                 return
@@ -421,10 +465,7 @@ class FastAPIProjectAnalyzer:
         if not body:
             return
         for statement in body.named_children:
-            if (
-                statement.type != "expression_statement"
-                or not statement.named_children
-            ):
+            if statement.type != "expression_statement" or not statement.named_children:
                 continue
             assignment = statement.named_children[0]
             if assignment.type != "assignment":
@@ -585,8 +626,7 @@ class FastAPIProjectAnalyzer:
                                 "file_path": route.file_path,
                                 "start_line": route.start_line,
                                 "end_line": route.end_line,
-                                "summary": route.summary
-                                or self._first_line(route.docstring),
+                                "summary": route.summary or self._first_line(route.docstring),
                                 "tags": list(
                                     self._deduplicate(
                                         [
@@ -630,11 +670,7 @@ class FastAPIProjectAnalyzer:
             name_node = node.child_by_field_name("name")
             if not name_node:
                 name_node = next(
-                    (
-                        child
-                        for child in node.named_children
-                        if child.type == "identifier"
-                    ),
+                    (child for child in node.named_children if child.type == "identifier"),
                     None,
                 )
             if not name_node:
@@ -800,11 +836,7 @@ class FastAPIProjectAnalyzer:
                 modules,
                 imported.module,
             )
-            if (
-                target_module
-                and imported.symbol
-                in modules[target_module].pydantic_models
-            ):
+            if target_module and imported.symbol in modules[target_module].pydantic_models:
                 return True
         return False
 
@@ -828,11 +860,7 @@ class FastAPIProjectAnalyzer:
         parts = expression.split(".")
         imported = facts.imports.get(parts[0])
         if len(parts) == 1:
-            return bool(
-                imported
-                and imported.module == "fastapi"
-                and imported.symbol == expected
-            )
+            return bool(imported and imported.module == "fastapi" and imported.symbol == expected)
         return bool(
             len(parts) == 2
             and parts[1] == expected
@@ -875,11 +903,7 @@ class FastAPIProjectAnalyzer:
         if requested_module in modules:
             return requested_module
         suffix = f".{requested_module}"
-        candidates = [
-            module_name
-            for module_name in modules
-            if module_name.endswith(suffix)
-        ]
+        candidates = [module_name for module_name in modules if module_name.endswith(suffix)]
         return candidates[0] if len(candidates) == 1 else None
 
     @staticmethod
@@ -943,8 +967,7 @@ class FastAPIProjectAnalyzer:
         return [
             argument
             for argument in self._call_arguments(call)
-            if argument.type
-            not in {"keyword_argument", "dictionary_splat", "list_splat"}
+            if argument.type not in {"keyword_argument", "dictionary_splat", "list_splat"}
         ]
 
     @staticmethod
@@ -965,10 +988,7 @@ class FastAPIProjectAnalyzer:
             return ast.literal_eval(text)
         except (ValueError, SyntaxError):
             if node.type == "list":
-                values = [
-                    self._literal_value(facts, child)
-                    for child in node.named_children
-                ]
+                values = [self._literal_value(facts, child) for child in node.named_children]
                 return values if all(value is not None for value in values) else None
             return None
 

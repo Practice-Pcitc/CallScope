@@ -46,4 +46,3 @@ class ScanTaskData(ApiModel):
 
 class ScanTaskResponse(ApiModel):
     data: ScanTaskData
-

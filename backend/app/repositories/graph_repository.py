@@ -78,9 +78,7 @@ class GraphRepository:
             return []
         return list(
             self.session.scalars(
-                select(EndpointNode.endpoint_id).where(
-                    EndpointNode.node_id.in_(node_ids)
-                )
+                select(EndpointNode.endpoint_id).where(EndpointNode.node_id.in_(node_ids))
             )
         )
 

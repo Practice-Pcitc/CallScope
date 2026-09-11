@@ -11,7 +11,7 @@ export const NODE_HEIGHT = 66;
 export function layoutGraph(
   nodes: GraphNode[],
   edges: GraphEdge[],
-  roots: string[]
+  roots: string[],
 ): Map<string, NodePosition> {
   const nodeIds = new Set(nodes.map((node) => node.id));
   const ranks = new Map<string, number>();
@@ -20,7 +20,10 @@ export function layoutGraph(
     if (!nodeIds.has(edge.source) || !nodeIds.has(edge.target)) {
       continue;
     }
-    outgoing.set(edge.source, [...(outgoing.get(edge.source) ?? []), edge.target]);
+    outgoing.set(edge.source, [
+      ...(outgoing.get(edge.source) ?? []),
+      edge.target,
+    ]);
   }
   const queue: Array<[string, number]> = roots
     .filter((id) => nodeIds.has(id))
@@ -52,7 +55,7 @@ export function layoutGraph(
       .forEach((node, index) => {
         positions.set(node.id, {
           x: 48 + rank * 282,
-          y: 48 + index * 106
+          y: 48 + index * 106,
         });
       });
   }

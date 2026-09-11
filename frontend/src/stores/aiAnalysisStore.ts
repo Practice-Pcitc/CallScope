@@ -18,12 +18,15 @@ interface AIAnalysisState {
   reset: () => void;
 }
 
+let requestVersion = 0;
+let controller: AbortController | undefined;
+
 const initialState = {
   analysis: null,
   loading: false,
   error: null,
   activeTab: "overview",
-  focusedItemKey: null
+  focusedItemKey: null,
 };
 
 export const useAIAnalysisStore = create<AIAnalysisState>((set, get) => ({
@@ -34,31 +37,51 @@ export const useAIAnalysisStore = create<AIAnalysisState>((set, get) => ({
       set({ error: "请先从左侧选择至少一个接口" });
       return;
     }
+    const version = ++requestVersion;
+    controller?.abort();
+    controller = new AbortController();
     set({ loading: true, error: null, focusedItemKey: null });
     try {
-      const analysis = await aiAnalysisApi.endpoints(projectId, endpointIds);
+      const analysis = await aiAnalysisApi.endpoints(
+        projectId,
+        endpointIds,
+        {},
+        controller.signal,
+      );
+      if (version !== requestVersion) return;
       set({
         analysis,
         loading: false,
         activeTab: "overview",
-        error: analysis.errorMessage
+        error: analysis.errorMessage,
       });
     } catch (error) {
+      if (version !== requestVersion) return;
       set({ loading: false, error: getApiError(error).message });
     }
   },
 
   analyzeNode: async (projectId, nodeId) => {
+    const version = ++requestVersion;
+    controller?.abort();
+    controller = new AbortController();
     set({ loading: true, error: null, focusedItemKey: null });
     try {
-      const analysis = await aiAnalysisApi.nodeImpact(projectId, nodeId);
+      const analysis = await aiAnalysisApi.nodeImpact(
+        projectId,
+        nodeId,
+        {},
+        controller.signal,
+      );
+      if (version !== requestVersion) return;
       set({
         analysis,
         loading: false,
         activeTab: "impact",
-        error: analysis.errorMessage
+        error: analysis.errorMessage,
       });
     } catch (error) {
+      if (version !== requestVersion) return;
       set({ loading: false, error: getApiError(error).message });
     }
   },
@@ -68,16 +91,28 @@ export const useAIAnalysisStore = create<AIAnalysisState>((set, get) => ({
     if (!current) {
       return;
     }
+    const version = ++requestVersion;
+    controller?.abort();
+    controller = new AbortController();
     set({ loading: true, error: null });
     try {
-      const analysis = await aiAnalysisApi.regenerate(current.analysisId);
+      const analysis = await aiAnalysisApi.regenerate(
+        current.analysisId,
+        controller.signal,
+      );
+      if (version !== requestVersion) return;
       set({ analysis, loading: false, error: analysis.errorMessage });
     } catch (error) {
+      if (version !== requestVersion) return;
       set({ loading: false, error: getApiError(error).message });
     }
   },
 
   setActiveTab: (activeTab) => set({ activeTab }),
   setFocusedItemKey: (focusedItemKey) => set({ focusedItemKey }),
-  reset: () => set(initialState)
+  reset: () => {
+    controller?.abort();
+    requestVersion++;
+    set(initialState);
+  },
 }));

@@ -27,3 +27,29 @@ logs/
 # OS
 .DS_Store
 Thumbs.db
+
+# Secrets, generated artifacts and local runtime data
+.env.*
+!.env.example
+*.log
+.coverage
+htmlcov/
+*.egg-info/
+coverage/
+build/
+dist/
+data/
+uploads/
+playwright-report/
+test-results/
+
+# SQLite journal and write-ahead-log sidecars
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite3-journal
+*.sqlite3-wal
+*.sqlite3-shm

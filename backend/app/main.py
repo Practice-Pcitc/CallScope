@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from time import perf_counter
 from uuid import uuid4
 
 from fastapi import FastAPI, Request
@@ -14,7 +15,9 @@ from app.api.router import api_router
 from app.core.config import settings
 from app.core.database import check_database
 from app.core.exceptions import AppException
+from app.core.logging import logger, request_id_context
 from app.schemas.common import ErrorBody, ErrorEnvelope
+from app.services.ai_analysis_service import recover_ai_analyses
 from app.services.scan_service import recover_interrupted_scans
 
 
@@ -23,6 +26,7 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     """启动时尽早验证数据库连接，避免服务带病运行。"""
     check_database()
     recover_interrupted_scans()
+    recover_ai_analyses()
     yield
 
 
@@ -37,18 +41,45 @@ def create_app() -> FastAPI:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,
-        allow_credentials=True,
+        allow_credentials=False,
+        expose_headers=["X-Request-ID"],
         allow_methods=["*"],
         allow_headers=["*"],
     )
 
     @app.middleware("http")
     async def request_id_middleware(request: Request, call_next):
-        request_id = request.headers.get("X-Request-ID") or f"req_{uuid4().hex}"
+        request_id = f"req_{uuid4().hex}"
         request.state.request_id = request_id
-        response = await call_next(request)
-        response.headers["X-Request-ID"] = request_id
-        return response
+        token = request_id_context.set(request_id)
+        started = perf_counter()
+        try:
+            try:
+                response = await call_next(request)
+            except Exception as exc:
+                logger.error("request_failed", extra={"error_type": type(exc).__name__})
+                response = JSONResponse(
+                    status_code=500,
+                    content={
+                        "error": {
+                            "code": "INTERNAL_ERROR",
+                            "message": "服务内部错误，请凭请求编号排查",
+                            "details": None,
+                            "requestId": request_id,
+                        }
+                    },
+                )
+            response.headers["X-Request-ID"] = request_id
+            logger.info(
+                "request_completed",
+                extra={
+                    "status": response.status_code,
+                    "duration_ms": round((perf_counter() - started) * 1000),
+                },
+            )
+            return response
+        finally:
+            request_id_context.reset(token)
 
     @app.exception_handler(AppException)
     async def app_exception_handler(request: Request, exc: AppException) -> JSONResponse:
@@ -70,16 +101,16 @@ def create_app() -> FastAPI:
             error=ErrorBody(
                 code="VALIDATION_ERROR",
                 message="请求参数校验失败",
-                details={"errors": exc.errors()},
+                details={
+                    "errors": [{"type": item["type"], "loc": item["loc"]} for item in exc.errors()]
+                },
                 request_id=request.state.request_id,
             )
         )
         return JSONResponse(status_code=422, content=payload.model_dump(by_alias=True))
 
     @app.exception_handler(StarletteHTTPException)
-    async def http_exception_handler(
-        request: Request, exc: StarletteHTTPException
-    ) -> JSONResponse:
+    async def http_exception_handler(request: Request, exc: StarletteHTTPException) -> JSONResponse:
         payload = ErrorEnvelope(
             error=ErrorBody(
                 code="HTTP_ERROR",

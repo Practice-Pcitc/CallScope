@@ -133,7 +133,7 @@ class CallGraphAnalyzer:
                     {
                         "path": relative_path,
                         "code": "CALL_GRAPH_PARSE_FAILED",
-                        "message": str(exc),
+                        "message": f"解析失败（{type(exc).__name__}），请检查文件格式",
                     }
                 )
 
@@ -197,11 +197,7 @@ class CallGraphAnalyzer:
         if requested_module in modules:
             return requested_module
         suffix = f".{requested_module}"
-        candidates = [
-            module_name
-            for module_name in modules
-            if module_name.endswith(suffix)
-        ]
+        candidates = [module_name for module_name in modules if module_name.endswith(suffix)]
         return candidates[0] if len(candidates) == 1 else None
 
     def _collect_imports(self, module: ModuleIndex) -> None:
@@ -452,8 +448,7 @@ class CallGraphAnalyzer:
                 target_key = target.stable_key
             else:
                 target_key = (
-                    f"unresolved:{module.module_name}:{call.start_point.row + 1}:"
-                    f"{expression}"
+                    f"unresolved:{module.module_name}:{call.start_point.row + 1}:{expression}"
                 )
                 self._add_node(
                     result,
@@ -495,11 +490,7 @@ class CallGraphAnalyzer:
             name_node = parameter.child_by_field_name("name")
             if not name_node:
                 name_node = next(
-                    (
-                        child
-                        for child in parameter.named_children
-                        if child.type == "identifier"
-                    ),
+                    (child for child in parameter.named_children if child.type == "identifier"),
                     None,
                 )
             type_node = parameter.child_by_field_name("type")
@@ -582,9 +573,7 @@ class CallGraphAnalyzer:
                     continue
                 arguments = value.child_by_field_name("arguments")
                 provider_node = (
-                    arguments.named_children[0]
-                    if arguments and arguments.named_children
-                    else None
+                    arguments.named_children[0] if arguments and arguments.named_children else None
                 )
                 if not provider_node:
                     continue
@@ -678,13 +667,10 @@ class CallGraphAnalyzer:
         receiver_root = parts[0]
         imported = module.imports.get(receiver_root)
 
-        is_sqlalchemy = (
-            method in DB_READ_METHODS | DB_WRITE_METHODS
-            and (
-                "Session" in receiver_type
-                or receiver_root.lower() in {"db", "session"}
-                or (imported and imported.module.startswith("sqlalchemy"))
-            )
+        is_sqlalchemy = method in DB_READ_METHODS | DB_WRITE_METHODS and (
+            "Session" in receiver_type
+            or receiver_root.lower() in {"db", "session"}
+            or (imported and imported.module.startswith("sqlalchemy"))
         )
         is_sql_function = (
             len(parts) == 1
@@ -697,9 +683,7 @@ class CallGraphAnalyzer:
         if is_sqlalchemy or is_sql_function:
             write_methods = DB_WRITE_METHODS | {"insert", "update", "delete"}
             relation_type = "WRITES" if method in write_methods else "QUERIES"
-            operation_key = (
-                f"dbop:{module.module_name}:{call.start_point.row + 1}:{expression}"
-            )
+            operation_key = f"dbop:{module.module_name}:{call.start_point.row + 1}:{expression}"
             self._add_node(
                 result,
                 stable_key=operation_key,
@@ -727,9 +711,7 @@ class CallGraphAnalyzer:
             )
             arguments = call.child_by_field_name("arguments")
             first_arg = (
-                arguments.named_children[0]
-                if arguments and arguments.named_children
-                else None
+                arguments.named_children[0] if arguments and arguments.named_children else None
             )
             if first_arg:
                 model_qn = self._resolve_symbol(module, module.parsed.text(first_arg))
@@ -737,9 +719,7 @@ class CallGraphAnalyzer:
                 if model:
                     model_module = modules.get(model.module_name)
                     table_name = (
-                        model_module.table_by_class.get(model.name)
-                        if model_module
-                        else None
+                        model_module.table_by_class.get(model.name) if model_module else None
                     )
                     if table_name:
                         self._add_relation(
@@ -789,18 +769,13 @@ class CallGraphAnalyzer:
 
         is_http = method in HTTP_METHODS and (
             "Client" in receiver_type
-            or (
-                imported
-                and imported.module.split(".")[0] in {"httpx", "requests"}
-            )
+            or (imported and imported.module.split(".")[0] in {"httpx", "requests"})
             or receiver_root in {"httpx", "requests"}
         )
         if is_http:
             arguments = call.child_by_field_name("arguments")
             url_node = (
-                arguments.named_children[0]
-                if arguments and arguments.named_children
-                else None
+                arguments.named_children[0] if arguments and arguments.named_children else None
             )
             url = module.parsed.text(url_node) if url_node else "<dynamic-url>"
             try:
@@ -851,8 +826,7 @@ class CallGraphAnalyzer:
                 endpoint["qualified_name"],
             )
             api_key = (
-                f"api:{endpoint['http_method']}:{endpoint['path']}:"
-                f"{endpoint['qualified_name']}"
+                f"api:{endpoint['http_method']}:{endpoint['path']}:{endpoint['qualified_name']}"
             )
             result.endpoint_api_keys[identity] = api_key
             self._add_node(
@@ -953,10 +927,7 @@ class CallGraphAnalyzer:
         column_number: int | None,
         evidence: str | None,
     ) -> None:
-        raw_key = (
-            f"{source_key}|{relation_type}|{target_key}|{file_path}|"
-            f"{line_number}|{evidence}"
-        )
+        raw_key = f"{source_key}|{relation_type}|{target_key}|{file_path}|{line_number}|{evidence}"
         stable_key = hashlib.sha1(raw_key.encode("utf-8")).hexdigest()
         result.relations.setdefault(
             stable_key,
@@ -1074,9 +1045,7 @@ class CallGraphAnalyzer:
     @staticmethod
     def _signature(definition: Definition) -> str:
         parameters = (
-            definition.parsed.text(definition.parameters)
-            if definition.parameters
-            else "()"
+            definition.parsed.text(definition.parameters) if definition.parameters else "()"
         )
         result = f"{definition.name}{parameters}"
         if definition.return_type:

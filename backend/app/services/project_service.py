@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from app.core.enums import ScanTaskStatus
 from app.core.exceptions import AppException
 from app.models.project import Project
+from app.repositories.ai_analysis_repository import AIAnalysisRepository
 from app.repositories.project_repository import ProjectRepository
 from app.repositories.scan_repository import ScanRepository
 from app.schemas.project import ProjectCreate
@@ -54,9 +55,7 @@ class ProjectService:
             )
         return project
 
-    def list(
-        self, *, search: str | None, page: int, page_size: int
-    ) -> tuple[list[Project], int]:
+    def list(self, *, search: str | None, page: int, page_size: int) -> tuple[list[Project], int]:
         return self.projects.list(
             search=search,
             offset=(page - 1) * page_size,
@@ -73,6 +72,12 @@ class ProjectService:
             raise AppException(
                 code="SCAN_IN_PROGRESS",
                 message="扫描进行中，暂时不能删除项目",
+                status_code=409,
+            )
+        if AIAnalysisRepository(self.session).has_running(project_id):
+            raise AppException(
+                code="AI_ANALYSIS_IN_PROGRESS",
+                message="AI 分析进行中，暂时不能删除项目",
                 status_code=409,
             )
         self.projects.delete(project)
@@ -110,4 +115,3 @@ class ProjectService:
                 details={"field": "rootPath"},
             )
         return str(resolved)
-

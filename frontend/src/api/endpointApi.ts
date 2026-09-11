@@ -17,7 +17,7 @@ interface EndpointResponse {
 export const endpointApi = {
   async list(
     projectId: string,
-    filters: EndpointFilters
+    filters: EndpointFilters,
   ): Promise<EndpointListResponse["data"]> {
     const response = await apiClient.get<EndpointListResponse>(
       `/projects/${projectId}/endpoints`,
@@ -27,18 +27,17 @@ export const endpointApi = {
           httpMethod:
             filters.httpMethod === "ALL" ? undefined : filters.httpMethod,
           module: filters.module || undefined,
-          pageSize: 200
-        }
-      }
+          pageSize: 200,
+        },
+      },
     );
     return response.data.data;
   },
 
   async get(projectId: string, endpointId: string): Promise<Endpoint> {
     const response = await apiClient.get<EndpointResponse>(
-      `/projects/${projectId}/endpoints/${endpointId}`
+      `/projects/${projectId}/endpoints/${endpointId}`,
     );
     return response.data.data;
-  }
+  },
 };
-

@@ -1,7 +1,7 @@
 import {
   CheckCircleOutlined,
   CloseCircleOutlined,
-  LoadingOutlined
+  LoadingOutlined,
 } from "@ant-design/icons";
 import { Alert, Button, Popover, Progress, Space, Tag, Typography } from "antd";
 
@@ -15,7 +15,7 @@ const stageNames: Record<string, string> = {
   PARSE: "解析源代码",
   RESOLVE: "解析接口与调用关系",
   PERSIST: "保存结果",
-  COMPLETED: "扫描完成"
+  COMPLETED: "扫描完成",
 };
 
 export function ScanStatusBanner({ task }: { task: ScanTask }) {
@@ -37,7 +37,13 @@ export function ScanStatusBanner({ task }: { task: ScanTask }) {
         <Progress
           percent={task.progress}
           showInfo={false}
-          status={failed ? "exception" : task.status === "SUCCEEDED" ? "success" : "active"}
+          status={
+            failed
+              ? "exception"
+              : task.status === "SUCCEEDED"
+                ? "success"
+                : "active"
+          }
           size="small"
         />
       </div>

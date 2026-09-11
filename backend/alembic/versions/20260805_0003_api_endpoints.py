@@ -60,4 +60,3 @@ def upgrade() -> None:
 def downgrade() -> None:
     op.drop_index("ix_api_endpoints_project_revision", table_name="api_endpoints")
     op.drop_table("api_endpoints")
-

@@ -7,7 +7,7 @@ import type {
   GraphNode,
   NodeDetail,
   RelationDetail,
-  SourceData
+  SourceData,
 } from "../types/graph";
 
 interface GraphState {
@@ -56,8 +56,8 @@ const initialState = {
   loading: false,
   detailLoading: false,
   error: null,
-  includeLowerConfidence: true,
-  layoutVersion: 0
+  includeLowerConfidence: false,
+  layoutVersion: 0,
 };
 
 function graphRecords(data: GraphData) {
@@ -70,11 +70,11 @@ function graphRecords(data: GraphData) {
         {
           ...node,
           loaded: roots.has(node.id) || expandedSources.has(node.id),
-          expanded: roots.has(node.id) || expandedSources.has(node.id)
-        }
-      ])
+          expanded: roots.has(node.id) || expandedSources.has(node.id),
+        },
+      ]),
     ),
-    edgesById: Object.fromEntries(data.edges.map((edge) => [edge.id, edge]))
+    edgesById: Object.fromEntries(data.edges.map((edge) => [edge.id, edge])),
   };
 }
 
@@ -93,12 +93,12 @@ export const useGraphStore = create<GraphState>((set, get) => ({
           ? await graphApi.endpointGraph(
               projectId,
               endpointIds[0],
-              get().includeLowerConfidence
+              get().includeLowerConfidence,
             )
           : await graphApi.combinedGraph(
               projectId,
               endpointIds,
-              get().includeLowerConfidence
+              get().includeLowerConfidence,
             );
       const records = graphRecords(data);
       set((state) => ({
@@ -113,7 +113,7 @@ export const useGraphStore = create<GraphState>((set, get) => ({
         aiHighlightedNodeIds: [],
         aiHighlightedEdgeIds: [],
         loading: false,
-        layoutVersion: state.layoutVersion + 1
+        layoutVersion: state.layoutVersion + 1,
       }));
       if (data.roots[0]) {
         await get().selectNode(data.roots[0]);
@@ -121,7 +121,7 @@ export const useGraphStore = create<GraphState>((set, get) => ({
     } catch (error) {
       set({
         loading: false,
-        error: error instanceof Error ? error.message : "拓扑加载失败"
+        error: error instanceof Error ? error.message : "拓扑加载失败",
       });
     }
   },
@@ -139,14 +139,14 @@ export const useGraphStore = create<GraphState>((set, get) => ({
             ...current.visibleNodeIds,
             ...Object.values(current.edgesById)
               .filter((edge) => edge.source === nodeId)
-              .map((edge) => edge.target)
-          ])
+              .map((edge) => edge.target),
+          ]),
         ),
         nodesById: {
           ...current.nodesById,
-          [nodeId]: { ...current.nodesById[nodeId], expanded: true }
+          [nodeId]: { ...current.nodesById[nodeId], expanded: true },
         },
-        layoutVersion: current.layoutVersion + 1
+        layoutVersion: current.layoutVersion + 1,
       }));
       return;
     }
@@ -155,7 +155,7 @@ export const useGraphStore = create<GraphState>((set, get) => ({
       const data = await graphApi.children(
         state.projectId,
         nodeId,
-        state.includeLowerConfidence
+        state.includeLowerConfidence,
       );
       set((current) => {
         const parentEntries = current.nodesById[nodeId]?.entryEndpointIds ?? [];
@@ -172,22 +172,17 @@ export const useGraphStore = create<GraphState>((set, get) => ({
             loaded: existing?.loaded || incoming.loaded,
             expanded: existing?.expanded || incoming.expanded,
             entryEndpointIds: Array.from(
-              new Set([
-                ...(existing?.entryEndpointIds ?? []),
-                ...entries
-              ])
+              new Set([...(existing?.entryEndpointIds ?? []), ...entries]),
             ),
             shared:
-              new Set([
-                ...(existing?.entryEndpointIds ?? []),
-                ...entries
-              ]).size > 1
+              new Set([...(existing?.entryEndpointIds ?? []), ...entries])
+                .size > 1,
           };
         }
         nodesById[nodeId] = {
           ...nodesById[nodeId],
           loaded: true,
-          expanded: true
+          expanded: true,
         };
         const edgesById = { ...current.edgesById };
         for (const incoming of data.edges) {
@@ -197,7 +192,7 @@ export const useGraphStore = create<GraphState>((set, get) => ({
             entryEndpointIds:
               incoming.entryEndpointIds.length > 0
                 ? incoming.entryEndpointIds
-                : parentEntries
+                : parentEntries,
           };
         }
         return {
@@ -206,17 +201,17 @@ export const useGraphStore = create<GraphState>((set, get) => ({
           visibleNodeIds: Array.from(
             new Set([
               ...current.visibleNodeIds,
-              ...data.nodes.map((item) => item.id)
-            ])
+              ...data.nodes.map((item) => item.id),
+            ]),
           ),
           loading: false,
-          layoutVersion: current.layoutVersion + 1
+          layoutVersion: current.layoutVersion + 1,
         };
       });
     } catch (error) {
       set({
         loading: false,
-        error: error instanceof Error ? error.message : "节点展开失败"
+        error: error instanceof Error ? error.message : "节点展开失败",
       });
     }
   },
@@ -228,8 +223,14 @@ export const useGraphStore = create<GraphState>((set, get) => ({
       const outgoing = new Map<string, string[]>();
       const incoming = new Map<string, string[]>();
       for (const edge of Object.values(state.edgesById)) {
-        outgoing.set(edge.source, [...(outgoing.get(edge.source) ?? []), edge.target]);
-        incoming.set(edge.target, [...(incoming.get(edge.target) ?? []), edge.source]);
+        outgoing.set(edge.source, [
+          ...(outgoing.get(edge.source) ?? []),
+          edge.target,
+        ]);
+        incoming.set(edge.target, [
+          ...(incoming.get(edge.target) ?? []),
+          edge.source,
+        ]);
       }
       const descendants = new Set<string>();
       const queue = [...(outgoing.get(nodeId) ?? [])];
@@ -242,7 +243,7 @@ export const useGraphStore = create<GraphState>((set, get) => ({
           (parent) =>
             parent !== nodeId &&
             visible.has(parent) &&
-            !descendants.has(parent)
+            !descendants.has(parent),
         );
         if (hasExternalParent) {
           continue;
@@ -255,12 +256,12 @@ export const useGraphStore = create<GraphState>((set, get) => ({
         visibleNodeIds: [...visible],
         nodesById: {
           ...state.nodesById,
-          [nodeId]: { ...state.nodesById[nodeId], expanded: false }
+          [nodeId]: { ...state.nodesById[nodeId], expanded: false },
         },
         selectedNodeId: descendants.has(state.selectedNodeId ?? "")
           ? nodeId
           : state.selectedNodeId,
-        layoutVersion: state.layoutVersion + 1
+        layoutVersion: state.layoutVersion + 1,
       };
     }),
 
@@ -269,7 +270,7 @@ export const useGraphStore = create<GraphState>((set, get) => ({
     set({
       selectedNodeId: nodeId,
       selectedEdgeId: null,
-      selectedRelationDetail: null
+      selectedRelationDetail: null,
     });
     if (!nodeId || !projectId) {
       set({ selectedNodeDetail: null, selectedSource: null });
@@ -279,13 +280,13 @@ export const useGraphStore = create<GraphState>((set, get) => ({
     try {
       const [detail, source] = await Promise.all([
         graphApi.node(projectId, nodeId),
-        graphApi.source(projectId, nodeId)
+        graphApi.source(projectId, nodeId),
       ]);
       if (get().selectedNodeId === nodeId) {
         set({
           selectedNodeDetail: detail,
           selectedSource: source,
-          detailLoading: false
+          detailLoading: false,
         });
       }
     } catch {
@@ -299,7 +300,7 @@ export const useGraphStore = create<GraphState>((set, get) => ({
       selectedEdgeId: edgeId,
       selectedNodeId: null,
       selectedNodeDetail: null,
-      selectedSource: null
+      selectedSource: null,
     });
     if (!edgeId || !projectId) {
       set({ selectedRelationDetail: null });
@@ -324,5 +325,5 @@ export const useGraphStore = create<GraphState>((set, get) => ({
     set({ aiHighlightedNodeIds: [], aiHighlightedEdgeIds: [] }),
   requestLayout: () =>
     set((state) => ({ layoutVersion: state.layoutVersion + 1 })),
-  reset: () => set(initialState)
+  reset: () => set(initialState),
 }));

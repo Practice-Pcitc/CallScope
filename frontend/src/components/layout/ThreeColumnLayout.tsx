@@ -3,7 +3,7 @@ import {
   useRef,
   useState,
   type PointerEvent as ReactPointerEvent,
-  type ReactNode
+  type ReactNode,
 } from "react";
 
 interface ThreeColumnLayoutProps {
@@ -25,14 +25,14 @@ function storedWidth(key: string, fallback: number): number {
 export function ThreeColumnLayout({
   left,
   center,
-  right
+  right,
 }: ThreeColumnLayoutProps) {
   const layoutRef = useRef<HTMLDivElement>(null);
   const [leftWidth, setLeftWidth] = useState(() =>
-    storedWidth(LEFT_KEY, LEFT_DEFAULT)
+    storedWidth(LEFT_KEY, LEFT_DEFAULT),
   );
   const [rightWidth, setRightWidth] = useState(() =>
-    storedWidth(RIGHT_KEY, RIGHT_DEFAULT)
+    storedWidth(RIGHT_KEY, RIGHT_DEFAULT),
   );
 
   const startResize = useCallback(
@@ -43,23 +43,22 @@ export function ThreeColumnLayout({
       document.body.classList.add("panel-resizing");
 
       const move = (moveEvent: PointerEvent) => {
-        const containerWidth = layoutRef.current?.clientWidth ?? window.innerWidth;
+        const containerWidth =
+          layoutRef.current?.clientWidth ?? window.innerWidth;
         const delta = moveEvent.clientX - startX;
         const available =
-          containerWidth -
-          (side === "left" ? rightWidth : leftWidth) -
-          430;
+          containerWidth - (side === "left" ? rightWidth : leftWidth) - 430;
         const minimum = side === "left" ? 240 : 340;
         const maximum = Math.max(
           minimum,
-          Math.min(side === "left" ? 520 : 720, available)
+          Math.min(side === "left" ? 520 : 720, available),
         );
         const next = Math.min(
           Math.max(
             side === "left" ? startWidth + delta : startWidth - delta,
-            minimum
+            minimum,
           ),
-          maximum
+          maximum,
         );
         if (side === "left") {
           setLeftWidth(next);
@@ -78,7 +77,7 @@ export function ThreeColumnLayout({
       window.addEventListener("pointermove", move);
       window.addEventListener("pointerup", finish, { once: true });
     },
-    [leftWidth, rightWidth]
+    [leftWidth, rightWidth],
   );
 
   const resetWidth = (side: "left" | "right") => {
@@ -96,7 +95,7 @@ export function ThreeColumnLayout({
       ref={layoutRef}
       className="three-column-layout"
       style={{
-        gridTemplateColumns: `${leftWidth}px 6px minmax(420px, 1fr) 6px ${rightWidth}px`
+        gridTemplateColumns: `${leftWidth}px 6px minmax(420px, 1fr) 6px ${rightWidth}px`,
       }}
     >
       <aside className="panel left-panel">{left}</aside>

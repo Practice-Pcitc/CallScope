@@ -79,4 +79,3 @@ def delete_project(
 ) -> Response:
     ProjectService(session).delete(project_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
-

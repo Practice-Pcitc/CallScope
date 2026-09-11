@@ -62,7 +62,7 @@ export const useProjectStore = create<ProjectState>((set) => ({
       const project = await projectApi.create(payload);
       set((state) => ({
         projects: [project, ...state.projects],
-        loading: false
+        loading: false,
       }));
       return project;
     } catch (error) {
@@ -77,7 +77,7 @@ export const useProjectStore = create<ProjectState>((set) => ({
     set((state) => ({
       projects: state.projects.filter((project) => project.id !== projectId),
       activeProject:
-        state.activeProject?.id === projectId ? null : state.activeProject
+        state.activeProject?.id === projectId ? null : state.activeProject,
     }));
   },
 
@@ -88,7 +88,7 @@ export const useProjectStore = create<ProjectState>((set) => ({
       activeProject:
         state.activeProject?.id === projectId
           ? { ...state.activeProject, scanStatus: "SCANNING" }
-          : state.activeProject
+          : state.activeProject,
     }));
     return task;
   },
@@ -106,6 +106,5 @@ export const useProjectStore = create<ProjectState>((set) => ({
       }
       throw error;
     }
-  }
+  },
 }));
-

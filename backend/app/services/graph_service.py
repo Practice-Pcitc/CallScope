@@ -198,15 +198,9 @@ class GraphService:
         return NodeDetailData(
             **base.model_dump(),
             source_excerpt=node.source_excerpt,
-            upstream=[
-                self._edge_data(edge)
-                for edge in related
-                if edge.target_node_id == node.id
-            ],
+            upstream=[self._edge_data(edge) for edge in related if edge.target_node_id == node.id],
             downstream=[
-                self._edge_data(edge)
-                for edge in related
-                if edge.source_node_id == node.id
+                self._edge_data(edge) for edge in related if edge.source_node_id == node.id
             ],
         )
 
@@ -297,8 +291,7 @@ class GraphService:
         entry_ids_by_node: dict[str, set[str]] = defaultdict(set)
         entry_ids_by_edge: dict[str, set[str]] = defaultdict(set)
         root_to_endpoint = {
-            root.id: endpoint_id
-            for root, endpoint_id in zip(roots, endpoint_ids, strict=True)
+            root.id: endpoint_id for root, endpoint_id in zip(roots, endpoint_ids, strict=True)
         }
         for root in roots:
             entry_ids_by_node[root.id].add(root_to_endpoint[root.id])
@@ -411,8 +404,7 @@ class GraphService:
         graph.add_edges_from(
             (edge.source_node_id, edge.target_node_id)
             for edge in edges
-            if edge.source_node_id in unique_nodes
-            and edge.target_node_id in unique_nodes
+            if edge.source_node_id in unique_nodes and edge.target_node_id in unique_nodes
         )
         computed_depths = dict(depth_by_node)
         for root in roots:
